@@ -1,0 +1,4 @@
+openstacksdk
+fastapi[standard]
+uvicorn
+pydantic
