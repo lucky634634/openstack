@@ -12,7 +12,8 @@
     "axios": "^1.9.0",
     "preact": "^10.26.5",
     "preact-router": "^4.1.2",
-    "react-force-graph-2d": "^1.27.1"
+    "react-force-graph-2d": "^1.27.1",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.1",

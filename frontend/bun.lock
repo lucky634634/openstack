@@ -8,6 +8,7 @@
         "preact": "^10.26.5",
         "preact-router": "^4.1.2",
         "react-force-graph-2d": "^1.27.1",
+        "react-icons": "^5.5.0",
       },
       "devDependencies": {
         "@preact/preset-vite": "^2.10.1",
@@ -363,6 +364,8 @@
     "react": ["react@19.1.0", "", {}, "sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg=="],
 
     "react-force-graph-2d": ["react-force-graph-2d@1.27.1", "", { "dependencies": { "force-graph": "^1.49", "prop-types": "15", "react-kapsule": "^2.5" }, "peerDependencies": { "react": "*" } }, "sha512-/b1k+HbW9QCzGILJibyzN2PVZdDWTFuEylqcJGkUTBs0uLcK0h2LgOUuVU+GpRGpuXmj9sBAt43zz+PTETFHGg=="],
+
+    "react-icons": ["react-icons@5.5.0", "", { "peerDependencies": { "react": "*" } }, "sha512-MEFcXdkP3dLo8uumGI5xN3lDFNsRtrjbOEKDLD7yv76v4wpnEq2Lt2qeHaQOr34I/wPN3s3+N08WkQ+CW37Xiw=="],
 
     "react-is": ["react-is@16.13.1", "", {}, "sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ=="],
 
