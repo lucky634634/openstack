@@ -27,7 +27,6 @@ nav {
 
 .active {
     background-color: #007bff;
-    color: white;
 
     & a {
         color: white;
