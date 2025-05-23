@@ -22,7 +22,7 @@ app.add_middleware(
 )
 
 # openstack
-openstack.enable_logging(debug=False, path="openstack.log", stream=sys.stdout)
+openstack.enable_logging(debug=True, path="openstack.log")
 
 conn = openstack.connect(cloud="local")
 
@@ -150,9 +150,9 @@ async def get_instances():
     instances = conn.list_servers()
     return [
         Instance(
-            id=instance.id,
-            name=instance.name,
-            status=instance.status,
+            id=instance.id,  # type: ignore
+            name=instance.name,  # type: ignore
+            status=instance.status,  # type: ignore
         )
         for instance in instances
     ]

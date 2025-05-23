@@ -1,9 +1,9 @@
 import Router from 'preact-router'
 import './app.css'
 import { useState } from 'preact/hooks'
-import NavBar from './components/NavBar'
 import Home from './pages/Home'
 import Network from './pages/Network'
+import NavBar from './components/NavBar'
 
 export function App() {
 	const [page, setPage] = useState("/")

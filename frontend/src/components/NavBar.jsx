@@ -1,23 +1,26 @@
-import { PiNetwork } from 'react-icons/pi'
-import './NavBar.css'
-import { BiHome } from 'react-icons/bi'
+import { BiHome } from "react-icons/bi"
+import { PiNetwork } from "react-icons/pi"
+import { HiMiniComputerDesktop } from "react-icons/hi2"
+import "./NavBar.css"
 
 export default function NavBar({ currentUrl }) {
-    const menuItems = [
-        { id: "Home", path: "/", icon: <BiHome /> },
-        { id: "Network", path: "/network", icon: <PiNetwork /> },
+    const navItems = [
+        { name: "Home", icon: <BiHome />, link: '/' },
+        { name: "Network", icon: <PiNetwork />, link: '/network' },
+        { name: "VM", icon: <HiMiniComputerDesktop />, link: '#' },
     ]
+
     return <>
         <nav>
-            <ul className='menu'>
-                {menuItems.map((item) => {
-                    return (
-                        <li key={item.id} className={`menu-item ${currentUrl == item.path ? 'active' : ''}`}>
-                            <a href={item.path}>{item.icon}</a>
-                        </li>
-                    )
-                })}
+            <ul className="menu">
+                {navItems.map((item) => (
+                    <li key={item.name}>
+                        <a href={item.link} className={`menu-item ${currentUrl === item.link ? "active" : ""}`}>
+                            {item.icon}
+                        </a>
+                    </li>
+                ))}
             </ul>
-        </nav>
+        </nav >
     </>
 }

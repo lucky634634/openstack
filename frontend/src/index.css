@@ -1,5 +1,23 @@
+:root {
+	--background-color: #007bff;
+}
+
 * {
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
+	font-family: 'Courier New', Courier, monospace;
+}
+
+.button-list {
+	display: flex;
+	padding: 10px;
+}
+
+.button-list button {
+	border: none;
+	border-radius: 5px;
+	background-color: var(--background-color);
+	color: white;
+	padding: 10px;
 }
