@@ -1,6 +1,6 @@
 import Table from '../components/Table'
 import './Network.css'
-import api from '../api.js'
+import createApiInstance from '../api'
 import { useState } from 'preact/hooks'
 
 export default function Network() {
@@ -8,6 +8,7 @@ export default function Network() {
     const [data, setData] = useState([])
 
     async function GetData() {
+        const api = await createApiInstance()
         await api.get('/networks').then((response) => {
             setData(response.data)
             console.log(data)
