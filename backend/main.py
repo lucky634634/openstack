@@ -38,8 +38,8 @@ async def get_networks():
             status=net.status,
             subnet_ids=net.subnet_ids,
             external=net.is_router_external,
-            created_data=net.created_at,
-            updated_data=net.updated_at,
+            created_date=net.created_at,
+            updated_date=net.updated_at,
         )
         for net in networks
     ]
@@ -171,8 +171,8 @@ async def get_instance(instance_id: str):
 
 
 if __name__ == "__main__":
-    print("-------------------")
-    for server in conn.list_servers():
-        print(server)
-    print("-------------------")
+    # print("-------------------")
+    # for server in conn.list_servers():
+    #     print(server)
+    # print("-------------------")
     uvicorn.run(app, host="localhost", port=8080)

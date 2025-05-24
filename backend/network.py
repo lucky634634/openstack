@@ -9,8 +9,8 @@ class Network(BaseModel):
     status: str
     subnet_ids: List[str]
     external: bool
-    created_data: str
-    updated_data: str
+    created_date: str
+    updated_date: str
 
 class Subnet(BaseModel):
     id: str

@@ -7,7 +7,7 @@ export default function NavBar({ currentUrl }) {
     const navItems = [
         { name: "Home", icon: <BiHome />, link: '/' },
         { name: "Network", icon: <PiNetwork />, link: '/network' },
-        { name: "VM", icon: <HiMiniComputerDesktop />, link: '#' },
+        { name: "VM", icon: <HiMiniComputerDesktop />, link: '/vm' },
     ]
 
     return <>
