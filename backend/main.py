@@ -27,6 +27,11 @@ openstack.enable_logging(debug=True, path="openstack.log")
 conn = openstack.connect(cloud="local")
 
 
+@app.get("/health")
+async def health():
+    return {"status": "OK"}
+
+
 @app.get("/networks/")
 async def get_networks():
     networks = conn.list_networks()
