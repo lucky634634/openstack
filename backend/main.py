@@ -175,4 +175,7 @@ if __name__ == "__main__":
     # for server in conn.list_servers():
     #     print(server)
     # print("-------------------")
-    uvicorn.run(app, host="localhost", port=8080)
+    host = "localhost"
+    if len(sys.argv) > 1:
+        host = sys.argv[1]
+    uvicorn.run(app, host=host, port=8080)
