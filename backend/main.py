@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from openstack import connection, network
@@ -70,6 +70,62 @@ async def get_network(network_id: str):
     )
 
 
+@app.post("/networks")
+async def create_network(
+    name: str,
+    external: bool,
+    admin_state_up: bool = True,
+    provider_network_type: Optional[str] = None,
+    provider_physical_network: Optional[str] = None,
+    provider_segmentation_id: Optional[int] = None,
+    subnet_name: str = Query(...),
+    cidr: str = Query(...),
+    ip_version: int = 4,
+    gateway_ip: Optional[str] = None,
+    enable_dhcp: bool = True,
+    dns_nameservers: Optional[List[str]] = Query(None),
+):
+    try:
+        provider = {}
+        if provider_network_type:
+            provider["network_type"] = provider_network_type
+        if provider_physical_network:
+            provider["physical_network"] = provider_physical_network
+        if provider_segmentation_id:
+            provider["segmentation_id"] = provider_segmentation_id
+
+        network = conn.create_network(
+            name=name,
+            admin_state_up=admin_state_up,
+            external=external,
+            provider=None if provider_network_type is None else provider,
+        )
+
+        subnet = conn.create_subnet(
+            network_name_or_id=network.id,
+            name=name,
+            cidr=cidr,
+            ip_version=ip_version,
+            enable_dhcp=enable_dhcp,
+            gateway_ip=gateway_ip,
+            dns_nameservers=dns_nameservers,
+        )
+
+        return Network(
+            id=network.id,
+            name=network.name,
+            description=network.description,
+            subnet_ids=network.subnet_ids,
+            status=network.status,
+            external=network.is_router_external,
+            created_date=network.created_at,
+            updated_date=network.updated_at,
+        )
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/subnets/")
 async def get_subnets():
     subnets = conn.list_subnets()
@@ -130,6 +186,39 @@ async def get_flavor(flavor_id: str):
         vcpus=flavor.vcpus,
         description="" if flavor.description is None else flavor.description,
     )
+
+
+@app.post("/flavors")
+async def create_flavors(
+    name: str,
+    ram: int,
+    disk: int,
+    ephemeral: int,
+    vcpus: int,
+    description: Optional[str] = None,
+):
+    try:
+        flavor = conn.create_flavor(
+            name=name,
+            ram=ram,
+            disk=disk,
+            ephemeral=ephemeral,
+            vcpus=vcpus,
+            description=description,
+        )
+        if flavor is None:
+            return {"error": "Failed to create flavor"}
+        return Flavor(
+            id=flavor.id,
+            name=flavor.name,
+            ram=flavor.ram,
+            disk=flavor.disk,
+            ephemeral=flavor.ephemeral,
+            vcpus=flavor.vcpus,
+            description="" if flavor.description is None else flavor.description,
+        )
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.get("/images")

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "preact/hooks";
 import Table from "../components/Table";
 import createApiInstance from "../api";
+import CreateVMModal from "../components/CreateVMModal";
 
 export default function VMPage() {
     const headers = ["id", "name", "status"]
     const [data, setData] = useState([])
+    const [popup, setPopup] = useState(false)
 
     const GetData = async () => {
         const api = await createApiInstance()
@@ -16,6 +18,11 @@ export default function VMPage() {
         })
     }
 
+    const openPopup = () => {
+        setPopup(true)
+    }
+
+
     useEffect(() => {
         GetData()
     }, [])
@@ -23,10 +30,12 @@ export default function VMPage() {
     return <>
         <div className='button-list'>
             <button onClick={GetData}>refresh</button>
+            <button onClick={openPopup}>Create</button>
             <button>delete</button>
         </div>
         <div>
             <Table headers={headers} data={data} />
         </div>
+        {popup && <CreateVMModal />}
     </>
 }
