@@ -1,9 +1,12 @@
+from typing import Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from openstack import connection, network
 import openstack
 import sys
+
+from websockets import serve
 
 from network import *
 from flavor import *
@@ -22,7 +25,9 @@ app.add_middleware(
 )
 
 # openstack
-openstack.enable_logging(debug=True, path="openstack.log")
+openstack.enable_logging(
+    debug=True, path="openstack.log", stream=sys.stdout, format_stream=True
+)
 
 conn = openstack.connect(cloud="local")
 
@@ -60,8 +65,8 @@ async def get_network(network_id: str):
         status=network.status,
         subnet_ids=network.subnet_ids,
         external=network.is_router_external,
-        created_data=network.created_at,
-        updated_data=network.updated_at,
+        created_date=network.created_at,
+        updated_date=network.updated_at,
     )
 
 
@@ -155,9 +160,9 @@ async def get_instances():
     instances = conn.list_servers()
     return [
         Instance(
-            id=instance.id,  # type: ignore
-            name=instance.name,  # type: ignore
-            status=instance.status,  # type: ignore
+            id=instance.id,
+            name=instance.name,
+            status=instance.status,
         )
         for instance in instances
     ]
@@ -168,6 +173,42 @@ async def get_instance(instance_id: str):
     instance = conn.get_server(instance_id)
     if instance is None:
         return {"error": "Instance not found"}
+    return Instance(
+        id=instance.id,
+        name=instance.name,
+        status=instance.status,
+    )
+
+
+@app.post("/instances")
+async def create_instance(
+    name: str,
+    image_name: str,
+    flavor_id: str,
+    network_id: str,
+):
+    image = conn.get_image(image_name)
+    if image is None:
+        return {"error": "Image not found"}
+    flavor = conn.get_flavor(flavor_id)
+    if flavor is None:
+        return {"error": "Flavor not found"}
+    network = conn.get_network(network_id)
+    if network is None:
+        return {"error": "Network not found"}
+    user_data = ""
+    with open("userdata.txt", "r") as f:
+        user_data = f.read()
+    instance = conn.create_server(
+        name=name,
+        image=image,
+        flavor=flavor,
+        network=network,
+        auto_ip=True,
+        userdata=user_data,
+    )
+
+    conn.wait_for_server(instance)
     return Instance(
         id=instance.id,
         name=instance.name,

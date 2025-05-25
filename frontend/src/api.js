@@ -10,8 +10,7 @@ let api;
 async function createApiInstance() {
     for (const url of urls) {
         try {
-            // Thử gửi request nhỏ để kiểm tra
-            await axios.get(url + '/health'); // giả sử có endpoint /health hoặc /
+            await axios.get(url + '/health');
             api = axios.create({
                 baseURL: url,
                 timeout: 10000,

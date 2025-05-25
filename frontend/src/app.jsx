@@ -4,7 +4,7 @@ import { useState } from 'preact/hooks'
 import Home from './pages/Home'
 import Network from './pages/Network'
 import NavBar from './components/NavBar'
-import VMPage from './assets/VMPage'
+import VMPage from './pages/VMPage'
 
 export function App() {
 	const [page, setPage] = useState("/")
