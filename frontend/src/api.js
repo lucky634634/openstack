@@ -1,32 +1,30 @@
-import axios from 'axios';
+import axios from "axios";
 
 const urls = [
-    "http://localhost:8080",
-    "http://192.168.1.100:8080"
+    "localhost:8080",
+    "192.168.1.100:8080"
 ]
 
 let api;
 
-async function createApiInstance() {
-    for (const url of urls) {
+async function CreateApiInstance() {
+    for (const url of urls){
         try {
             await axios.get(url + '/health');
             api = axios.create({
                 baseURL: url,
-                timeout: 10000,
+                timeout: 5000,
             });
-            console.log(`Using baseURL: ${url}`);
-            break;
-        } catch (err) {
-            console.warn(`Failed to connect to ${url}`);
+            return api;
+        } catch (error) {
+            console.error(`Failed to create API instance for ${url}:`, error);
         }
-    }
-
+    } 
     if (!api) {
-        throw new Error("No available API endpoints.");
+        console.error("No valid API instance created.");
     }
 
     return api;
 }
 
-export default createApiInstance;
+export default CreateApiInstance;

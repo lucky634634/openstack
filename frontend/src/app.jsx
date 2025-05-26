@@ -1,24 +1,30 @@
-import Router from 'preact-router'
-import './app.css'
-import { useState } from 'preact/hooks'
-import Home from './pages/Home'
-import Network from './pages/Network'
-import NavBar from './components/NavBar'
-import VMPage from './pages/VMPage'
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Box, CssBaseline, Toolbar } from "@mui/material";
 
-export function App() {
-	const [page, setPage] = useState("/")
+import AppBarHeader from "./components/AppBarHeader";
+import Sidebar from "./components/Sidebar";
+import DashboardPage from "./pages/DashboardPage";
+import NetworkPage from "./pages/NetworkPage";
 
-	return (
-		<>
-			<NavBar currentUrl={page} />
-			<div id='main'>
-				<Router onChange={(e) => setPage(e.path)}>
-					<Home path='/' />
-					<Network path='/network' />
-					<VMPage path='/vm' />
-				</Router>
-			</div>
-		</>
-	)
+function App() {
+  return (
+    <Router>
+      <Box sx={{ display: "flex" }}>
+        <CssBaseline />
+        <AppBarHeader />
+        <Sidebar />
+
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <Toolbar />
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/network" element={<NetworkPage />} />
+          </Routes>
+        </Box>
+      </Box>
+    </Router>
+  );
 }
+
+export default App;
