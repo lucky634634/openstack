@@ -7,11 +7,10 @@ import {
     ListItemIcon,
     ListItemText,
     ListItemButton,
-    Icon
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import CloudQueueIcon from '@mui/icons-material/CloudQueue';
-import SettingsIcon from "@mui/icons-material/Settings";
+import ComputerIcon from '@mui/icons-material/Computer';
 import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "@mui/material";
 
@@ -20,10 +19,11 @@ const drawerWidth = 240;
 const navItems = [
     { text: "Dashboard", icon: <DashboardIcon />, path: "/" },
     { text: "Network", icon: <CloudQueueIcon />, path: "/network" },
+    { text: "VM", icon: <ComputerIcon />, path: "/vm" },
 ];
 
 function Sidebar() {
-    const location = useLocation(); // Get current route path
+    const location = useLocation();
     const theme = useTheme();
 
     return (

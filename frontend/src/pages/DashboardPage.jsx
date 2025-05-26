@@ -8,11 +8,20 @@ const data = {
         { id: "Node 2" },
         { id: "Node 3" },
         { id: "Node 4" },
+        { id: "Node 5" },
+        { id: "Node 6" },
+        { id: "Node 7" },
+        { id: "Node 8" },
     ],
     links: [
         { source: "Node 1", target: "Node 2" },
         { source: "Node 1", target: "Node 3" },
-        { source: "Node 2", target: "Node 4" },
+        { source: "Node 1", target: "Node 4" },
+        { source: "Node 2", target: "Node 3" },
+        { source: "Node 2", target: "Node 5" },
+        { source: "Node 2", target: "Node 6" },
+        { source: "Node 2", target: "Node 7" },
+        { source: "Node 2", target: "Node 8" },
     ],
 };
 

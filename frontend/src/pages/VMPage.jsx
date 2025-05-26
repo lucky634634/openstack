@@ -3,7 +3,7 @@ import { Box, Button, Typography, Dialog, DialogTitle, DialogContent } from "@mu
 import { DataGrid } from "@mui/x-data-grid";
 import { useState } from "react";
 
-function NetworkPage() {
+export default function VMPage() {
     const columns = [
         { field: 'id', headerName: 'ID', width: 90 },
         { field: 'name', headerName: 'Name', flex: 1 },
@@ -62,5 +62,3 @@ function NetworkPage() {
         </Box>
     </>
 }
-
-export default NetworkPage;

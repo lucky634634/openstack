@@ -6,6 +6,7 @@ import AppBarHeader from "./components/AppBarHeader";
 import Sidebar from "./components/Sidebar";
 import DashboardPage from "./pages/DashboardPage";
 import NetworkPage from "./pages/NetworkPage";
+import VMPage from "./pages/VMPage";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/network" element={<NetworkPage />} />
+            <Route path="/vm" element={<VMPage />} />
           </Routes>
         </Box>
       </Box>
