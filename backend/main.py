@@ -1,9 +1,12 @@
+from re import S
 from typing import Optional
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import openstack
 import sys
+from dotenv import load_dotenv
+import os
 
 from openstackutil import *
 
@@ -24,6 +27,8 @@ openstack.enable_logging(
 )
 
 conn = openstack.connect(cloud="local")
+
+load_dotenv()
 
 
 @app.get("/health")
@@ -212,7 +217,27 @@ async def create_subnet(
             gateway_ip=subnet.gateway_ip,
         )
     except Exception as e:
-        return {"error": str(e)}
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/update-subnet")
+async def update_subnet(
+    subnet: str,
+    disable_gateway_ip: Optional[bool] = False,
+    gateway_ip: Optional[str] = None,
+):
+    try:
+        result = conn.update_subnet(
+            name_or_id=subnet,
+            disable_gateway_ip=disable_gateway_ip,
+            gateway_ip=gateway_ip,
+        )
+        if result:
+            return {"message": "Subnet updated successfully"}
+        else:
+            return {"error": "Subnet update unsuccessful"}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/flavors/")
@@ -384,7 +409,6 @@ async def create_instance(
 
 
 if __name__ == "__main__":
-    host = "localhost"
-    if len(sys.argv) > 1:
-        host = sys.argv[1]
-    uvicorn.run(app, host=host, port=8080)
+    host = str(os.getenv("HOST_IP", "localhost"))
+    port = int(os.getenv("PORT", 8080))
+    uvicorn.run(app, host=host, port=port)
