@@ -5,11 +5,7 @@ import uvicorn
 import openstack
 import sys
 
-
-from network import *
-from flavor import *
-from image import *
-from instance import *
+from openstackutil import *
 
 # fastapi
 app = FastAPI(debug=True)
@@ -74,7 +70,7 @@ async def get_network(network_id: str):
         return HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/networks")
+@app.post("/create-network")
 async def create_network(
     name: str,
     external: bool,
@@ -105,7 +101,10 @@ async def create_network(
             provider=None if provider_network_type is None else provider,
         )
 
-        subnet = conn.create_subnet(
+        if "/" not in cidr:
+            cidr = f"{cidr}/24"
+
+        conn.create_subnet(
             network_name_or_id=network.id,
             name=subnet_name,
             cidr=cidr,
@@ -130,6 +129,18 @@ async def create_network(
         return {"error": str(e)}
 
 
+@app.put("/delete-network")
+async def delete_network(network: str):
+    try:
+        result = conn.delete_network(network)
+        if result:
+            return {"message": "Network deleted successfully"}
+        else:
+            return {"error": "Network deleted unsuccessfully"}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/subnets/")
 async def get_subnets():
     try:
@@ -141,6 +152,8 @@ async def get_subnets():
                 network_id=subnet.network_id,
                 description=subnet.description,
                 cidr=subnet.cidr,
+                dns_nameservers=[dns for dns in subnet.dns_nameservers],
+                gateway_ip=subnet.gateway_ip,
             )
             for subnet in subnets
         ]
@@ -160,9 +173,46 @@ async def get_subnet(subnet_id: str):
             network_id=subnet.network_id,
             description=subnet.description,
             cidr=subnet.cidr,
+            dns_nameservers=[dns for dns in subnet.dns_nameservers],
+            gateway_ip=subnet.gateway_ip,
         )
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/create-subnet")
+async def create_subnet(
+    network: str,
+    subnet_name: str,
+    cidr: str,
+    ip_version: int = 4,
+    gateway_ip: Optional[str] = None,
+    enable_dhcp: bool = True,
+    dns_nameservers: Optional[List[str]] = Query(None),
+):
+    try:
+        if "/" not in cidr:
+            cidr = f"{cidr}/24"
+        subnet = conn.create_subnet(
+            network_name_or_id=network,
+            name=subnet_name,
+            cidr=cidr,
+            ip_version=ip_version,
+            enable_dhcp=enable_dhcp,
+            gateway_ip=gateway_ip,
+            dns_nameservers=dns_nameservers,
+        )
+        return Subnet(
+            id=subnet.id,
+            name=subnet.name,
+            network_id=subnet.network_id,
+            description=subnet.description,
+            cidr=subnet.cidr,
+            dns_nameservers=[dns for dns in subnet.dns_nameservers],
+            gateway_ip=subnet.gateway_ip,
+        )
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.get("/flavors/")
@@ -198,7 +248,7 @@ async def get_flavor(flavor_id: str):
     )
 
 
-@app.post("/flavors")
+@app.post("/create-flavors")
 async def create_flavors(
     name: str,
     ram: int,
@@ -227,6 +277,18 @@ async def create_flavors(
             vcpus=flavor.vcpus,
             description="" if flavor.description is None else flavor.description,
         )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/delete-flavors")
+async def delete_flavors(flavor: str):
+    try:
+        result = conn.delete_flavor(flavor)
+        if result:
+            return {"message": "Flavor deleted successfully"}
+        else:
+            return {"error": "Flavor deleted unsuccessfully"}
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -322,10 +384,6 @@ async def create_instance(
 
 
 if __name__ == "__main__":
-    # print("-------------------")
-    # for server in conn.list_servers():
-    #     print(server)
-    # print("-------------------")
     host = "localhost"
     if len(sys.argv) > 1:
         host = sys.argv[1]

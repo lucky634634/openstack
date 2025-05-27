@@ -29,7 +29,7 @@ export default function VMPage() {
     };
 
     return <>
-        <Typography variant="h4">Network Page</Typography>
+        <Typography variant="h4">VM Page</Typography>
         <Box sx={{ padding: "5px 0px", width: "100%" }}>
             <Button
                 variant="contained"

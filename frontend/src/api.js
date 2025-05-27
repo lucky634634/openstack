@@ -21,7 +21,7 @@ async function CreateApiInstance() {
         }
     } 
     if (!api) {
-        console.error("No valid API instance created.");
+        throw new Error("No API instance created") 
     }
 
     return api;

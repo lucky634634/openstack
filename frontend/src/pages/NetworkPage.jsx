@@ -1,64 +1,39 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, Button, Typography, Dialog, DialogTitle, DialogContent } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { useState } from "react";
+import { createApiInstance } from "../api";
 
 function NetworkPage() {
     const columns = [
-        { field: 'id', headerName: 'ID', width: 90 },
+        { field: 'id', headerName: 'ID', flex: 1 },
         { field: 'name', headerName: 'Name', flex: 1 },
-        { field: 'status', headerName: 'Status', width: 120 },
+        { field: 'subnet', headerName: 'Subnet', width: 120 },
+        { field: 'gateway', headerName: 'Gateway', width: 120 },
     ];
 
     const rows = [
-        { id: 1, name: 'Alice', status: 'active' },
-        { id: 2, name: 'Bob', status: 'inactive' },
-        { id: 3, name: 'Charlie', status: 'active' },
     ];
 
     const [selectedIds, setSelectedIds] = useState([]);
-    const [dialogOpen, setDialogOpen] = useState(false);
 
-    const handleOpenDialog = () => {
-        setDialogOpen(true);
-        console.log(selectedIds);
-    };
-
-    const handleCloseDialog = () => {
-        setDialogOpen(false);
-    };
+    async function fetchData() {
+        const api = createApiInstance()
+        try {
+            const response = await api.get('/networks')
+            console.log(response.data)
+        } catch (error) {
+            console.error(error)
+        }
+    }
 
     return <>
         <Typography variant="h4">Network Page</Typography>
         <Box sx={{ padding: "5px 0px", width: "100%" }}>
-            <Button
-                variant="contained"
-                sx={{ marginRight: "5px" }}
-                color="primary"
-                onClick={handleOpenDialog}
-                disabled={!selectedIds.length}
-            >
-                Show Selected IDs
-            </Button>
-            <Button
-                variant="contained"
-                sx={{ marginRight: "5px" }}
-                color="primary"
-            >
-                Create
-            </Button>
+            <Button onClick={fetchData}>Refresh</Button>
+            <Button>Create</Button>
         </Box>
         <Box sx={{ width: "100%", height: "600px" }}>
-            <DataGrid rows={rows} columns={columns} checkboxSelection onRowSelectionModelChange={(ids) => setSelectedIds(Array.from(ids.ids))} />
-
-            <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-                <DialogTitle>Selected IDs</DialogTitle>
-                <DialogContent>
-                    {selectedIds.map((id) => (
-                        <Typography key={id}>ID: {id}</Typography>
-                    ))}
-                </DialogContent>
-            </Dialog>
+            <DataGrid rows={rows} columns={columns} checkboxSelection onRowSelectionModelChange={(rows) => setSelectedIds(rows.ids)} />
         </Box>
     </>
 }
