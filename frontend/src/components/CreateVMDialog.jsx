@@ -30,6 +30,20 @@ export default function CreateVMDialog({ open, handleClose }) {
     const [network, setNetwork] = useState("")
 
     async function createVM() {
+        await api.post('/create-instance', {
+            name: name,
+            image: image,
+            flavor: flavor,
+            network: network,
+        })
+            .then(response => {
+                console.log(response);
+                alert("VM created successfully");
+            })
+            .catch(error => {
+                console.error(error);
+                alert(error)
+            })
     }
 
     async function fetchImageList() {
@@ -133,7 +147,7 @@ export default function CreateVMDialog({ open, handleClose }) {
                         label="Flavor"
                     >
                         {flavorList.map((flavor, index) => (
-                            <MenuItem key={index} value={flavor.id}>
+                            <MenuItem key={index} value={flavor.name}>
                                 {flavor.name}
                             </MenuItem>))}
                     </Select>
@@ -143,11 +157,11 @@ export default function CreateVMDialog({ open, handleClose }) {
                     <InputLabel>Network</InputLabel>
                     <Select
                         value={network}
-                        onChange={(e) => setFlavor(e.target.value)}
+                        onChange={(e) => setNetwork(e.target.value)}
                         label="Flavor"
                     >
                         {networkList.map((network, index) => (
-                            <MenuItem key={index} value={network.id}>
+                            <MenuItem key={index} value={network.name}>
                                 {network.name}
                             </MenuItem>))}
                     </Select>

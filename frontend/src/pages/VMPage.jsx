@@ -3,6 +3,7 @@ import { Box, Button, Typography, Dialog, DialogTitle, DialogContent } from "@mu
 import { DataGrid } from "@mui/x-data-grid";
 import { useState } from "react";
 import api from "../api";
+import CreateVMDialog from "../components/CreateVMDialog";
 
 export default function VMPage() {
     const columns = [
@@ -14,16 +15,8 @@ export default function VMPage() {
     const [rows, setRows] = useState([])
 
     const [selectedIds, setSelectedIds] = useState([]);
-    const [dialogOpen, setDialogOpen] = useState(false);
 
-    const handleOpenDialog = () => {
-        setDialogOpen(true);
-        console.log(selectedIds);
-    };
-
-    const handleCloseDialog = () => {
-        setDialogOpen(false);
-    };
+    const [open, setOpen] = useState(false);
 
     async function fetchData() {
         await api.get('/instances')
@@ -38,6 +31,20 @@ export default function VMPage() {
             .catch(error => {
                 console.error(error);
             })
+    }
+
+    async function deleteData() {
+        for (let id of selectedIds) {
+            await api.delete("/delete-instance", { params: { instance: id } })
+                .then(response => {
+                    console.log(response);
+                    alert("Instance deleted successfully");
+                })
+                .catch(error => {
+                    console.error(error);
+                })
+        }
+        fetchData()
     }
 
     return <>
@@ -55,30 +62,23 @@ export default function VMPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                onClick={handleOpenDialog}
-                disabled={!selectedIds.length}
+                onClick={() => { setOpen(true) }}
             >
-                Show Selected IDs
+                Create
             </Button>
             <Button
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
+                disabled={selectedIds.length === 0}
+                onClick={deleteData}
             >
-                Create
+                Delete
             </Button>
         </Box >
         <Box sx={{ width: "100%", height: "600px" }}>
             <DataGrid rows={rows} columns={columns} checkboxSelection onRowSelectionModelChange={(ids) => setSelectedIds(Array.from(ids.ids))} />
-
-            <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-                <DialogTitle>Selected IDs</DialogTitle>
-                <DialogContent>
-                    {selectedIds.map((id) => (
-                        <Typography key={id}>ID: {id}</Typography>
-                    ))}
-                </DialogContent>
-            </Dialog>
         </Box>
+        <CreateVMDialog open={open} handleClose={() => { setOpen(false) }} />
     </>
 }

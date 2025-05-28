@@ -67,7 +67,13 @@ function NetworkPage() {
         <Box sx={{ width: "100%", height: "600px" }}>
             <DataGrid rows={rows} columns={columns} checkboxSelection onRowSelectionModelChange={(rows) => setSelectedIds(rows.ids)} />
         </Box>
-        <CreateNetworkDialog open={open} handleClose={() => { setOpen(false) }} />
+        <CreateNetworkDialog
+            open={open}
+            handleClose={() => {
+                setOpen(false)
+                fetchData()
+            }}
+        />
     </>
 }
 
