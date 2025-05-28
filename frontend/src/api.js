@@ -1,30 +1,10 @@
 import axios from "axios";
 
-const urls = [
-    "localhost:8080",
-    "192.168.1.100:8080"
-]
+const host = import.meta.env.VITE_API_HOST
 
-let api;
+const api = axios.create({
+    baseURL: host,
+    timeout: 10000,
+});
 
-async function CreateApiInstance() {
-    for (const url of urls){
-        try {
-            await axios.get(url + '/health');
-            api = axios.create({
-                baseURL: url,
-                timeout: 5000,
-            });
-            return api;
-        } catch (error) {
-            console.error(`Failed to create API instance for ${url}:`, error);
-        }
-    } 
-    if (!api) {
-        throw new Error("No API instance created") 
-    }
-
-    return api;
-}
-
-export default CreateApiInstance;
+export default api;

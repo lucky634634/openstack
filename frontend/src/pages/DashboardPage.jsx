@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import ForceGraph from "react-force-graph-2d";
 
 const data = {
@@ -45,14 +45,25 @@ function DashboardPage() {
     return (
         <Box sx={{ height: "100vh", padding: 2, width: "100%" }}>
             <Typography variant="h4" gutterBottom>
-                Force Graph (2D)
+                Graph
             </Typography>
+            <Box
+                sx={{ margin: "10px 0px" }}
+            >
+                <Button
+                    variant="contained"
+                    sx={{ marginRight: "5px" }}
+                    color="primary"
+                >
+                    Refresh
+                </Button>
+            </Box>
             <Box
                 ref={containerRef}
                 sx={{
                     flex: 1,
                     width: "100%",
-                    height: "500px", // Adjust for header or padding
+                    height: "500px",
                     border: "1px solid #ccc",
                 }}
             >

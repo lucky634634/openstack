@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Button, Typography, Dialog, DialogTitle, DialogContent } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useState } from "react";
+import api from "../api";
 
 export default function VMPage() {
     const columns = [
@@ -10,11 +11,7 @@ export default function VMPage() {
         { field: 'status', headerName: 'Status', width: 120 },
     ];
 
-    const rows = [
-        { id: 1, name: 'Alice', status: 'active' },
-        { id: 2, name: 'Bob', status: 'inactive' },
-        { id: 3, name: 'Charlie', status: 'active' },
-    ];
+    const [rows, setRows] = useState([])
 
     const [selectedIds, setSelectedIds] = useState([]);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -28,9 +25,32 @@ export default function VMPage() {
         setDialogOpen(false);
     };
 
+    async function fetchData() {
+        await api.get('/instances')
+            .then(response => {
+                console.log(response);
+                try {
+                    setRows(response.data);
+                } catch (error) {
+                    console.error(error);
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            })
+    }
+
     return <>
         <Typography variant="h4">VM Page</Typography>
         <Box sx={{ padding: "5px 0px", width: "100%" }}>
+            <Button
+                variant="contained"
+                sx={{ marginRight: "5px" }}
+                color="primary"
+                onClick={fetchData}
+            >
+                Refresh
+            </Button>
             <Button
                 variant="contained"
                 sx={{ marginRight: "5px" }}
@@ -47,7 +67,7 @@ export default function VMPage() {
             >
                 Create
             </Button>
-        </Box>
+        </Box >
         <Box sx={{ width: "100%", height: "600px" }}>
             <DataGrid rows={rows} columns={columns} checkboxSelection onRowSelectionModelChange={(ids) => setSelectedIds(Array.from(ids.ids))} />
 

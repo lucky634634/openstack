@@ -2,6 +2,8 @@ from re import S
 from typing import Optional
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import InstanceOf
 import uvicorn
 import openstack
 import sys
@@ -78,17 +80,12 @@ async def get_network(network_id: str):
 @app.post("/create-network")
 async def create_network(
     name: str,
-    external: bool,
+    shared: bool = False,
+    external: bool = True,
     admin_state_up: bool = True,
     provider_network_type: Optional[str] = None,
     provider_physical_network: Optional[str] = None,
     provider_segmentation_id: Optional[int] = None,
-    subnet_name: str = Query(...),
-    cidr: str = Query(...),
-    ip_version: int = 4,
-    gateway_ip: Optional[str] = None,
-    enable_dhcp: bool = True,
-    dns_nameservers: Optional[List[str]] = Query(None),
 ):
     try:
         provider = {}
@@ -101,23 +98,14 @@ async def create_network(
 
         network = conn.create_network(
             name=name,
-            admin_state_up=admin_state_up,
+            shared=shared,
             external=external,
-            provider=None if provider_network_type is None else provider,
+            provider=provider,
+            admin_state_up=admin_state_up,
         )
 
-        if "/" not in cidr:
-            cidr = f"{cidr}/24"
-
-        conn.create_subnet(
-            network_name_or_id=network.id,
-            name=subnet_name,
-            cidr=cidr,
-            ip_version=ip_version,
-            enable_dhcp=enable_dhcp,
-            gateway_ip=gateway_ip,
-            dns_nameservers=dns_nameservers,
-        )
+        if network is None:
+            return HTTPException(status_code=500, detail="Create network failed")
 
         return Network(
             id=network.id,
@@ -131,10 +119,49 @@ async def create_network(
         )
 
     except Exception as e:
-        return {"error": str(e)}
+        return HTTPException(status_code=500, detail=str(e))
 
 
-@app.put("/delete-network")
+@app.post("/create-network-with-subnet")
+async def create_network_with_subnet(payload: CreateNetworkWithSubnetRequest):
+    try:
+        provider = {}
+        if payload.provider_network_type:
+            provider["network_type"] = payload.provider_network_type
+        if payload.provider_physical_network:
+            provider["physical_network"] = payload.provider_physical_network
+        if payload.provider_segmentation_id:
+            provider["segmentation_id"] = payload.provider_segmentation_id
+
+        network = conn.create_network(
+            name=payload.name,
+            admin_state_up=payload.admin_state_up,
+            external=payload.external,
+            provider=provider,
+            shared=payload.shared,
+        )
+
+        cidr = payload.cidr
+        if "/" not in cidr:
+            cidr = f"{cidr}/24"
+
+        conn.create_subnet(
+            network_name_or_id=network.id,
+            name=payload.subnet_name,
+            cidr=cidr,
+            ip_version=payload.ip_version,
+            enable_dhcp=payload.enable_dhcp,
+            gateway_ip=payload.gateway_ip,
+            dns_nameservers=payload.dns_nameservers,
+        )
+
+        return network
+
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
+
+@app.delete("/delete-network")
 async def delete_network(network: str):
     try:
         result = conn.delete_network(network)
@@ -191,6 +218,7 @@ async def create_subnet(
     subnet_name: str,
     cidr: str,
     ip_version: int = 4,
+    disable_gateway_ip: bool = False,
     gateway_ip: Optional[str] = None,
     enable_dhcp: bool = True,
     dns_nameservers: Optional[List[str]] = Query(None),
@@ -206,6 +234,7 @@ async def create_subnet(
             enable_dhcp=enable_dhcp,
             gateway_ip=gateway_ip,
             dns_nameservers=dns_nameservers,
+            disable_gateway_ip=disable_gateway_ip,
         )
         return Subnet(
             id=subnet.id,
@@ -220,7 +249,7 @@ async def create_subnet(
         return HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/update-subnet")
+@app.put("/update-subnet")
 async def update_subnet(
     subnet: str,
     disable_gateway_ip: Optional[bool] = False,
@@ -236,6 +265,18 @@ async def update_subnet(
             return {"message": "Subnet updated successfully"}
         else:
             return {"error": "Subnet update unsuccessful"}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.put("/delete-subnet")
+async def delete_subnet(subnet: str):
+    try:
+        result = conn.delete_subnet(subnet)
+        if result:
+            return {"message": "Subnet deleted successfully"}
+        else:
+            return {"error": "Subnet deleted unsuccessfully"}
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -306,8 +347,8 @@ async def create_flavors(
         return HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/delete-flavors")
-async def delete_flavors(flavor: str):
+@app.delete("/delete-flavor")
+async def delete_flavor(flavor: str):
     try:
         result = conn.delete_flavor(flavor)
         if result:
@@ -369,28 +410,28 @@ async def get_instance(instance_id: str):
     )
 
 
-@app.post("/instances")
-async def create_instance(
-    name: str,
-    image_name: str,
-    flavor_id: str,
-    network_id: str,
-):
+@app.post("/create-instance")
+async def create_instance(payload: CreateVMRequest):
     try:
-        image = conn.get_image(image_name)
+        image = conn.get_image(payload.image)
         if image is None:
             return HTTPException(status_code=404, detail="Image not found")
-        flavor = conn.get_flavor(flavor_id)
+        flavor = conn.get_flavor(payload.flavor)
         if flavor is None:
             return HTTPException(status_code=404, detail="Flavor not found")
-        network = conn.get_network(network_id)
+        network = conn.get_network(payload.network)
         if network is None:
             return HTTPException(status_code=404, detail="Network not found")
-        user_data = ""
-        with open("userdata.txt", "r") as f:
-            user_data = f.read()
+        user_data = (
+            ""
+            if payload.userdata is None or payload.userdata == ""
+            else payload.userdata
+        )
+        if user_data == "":
+            with open("userdata.txt", "r") as f:
+                user_data = f.read()
         instance = conn.create_server(
-            name=name,
+            name=payload.name,
             image=image,
             flavor=flavor,
             network=network,
@@ -404,6 +445,18 @@ async def create_instance(
             name=instance.name,
             status=instance.status,
         )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/delete-instance")
+async def delete_instance(instance: str):
+    try:
+        result = conn.delete_server(name_or_id=instance, wait=True, delete_ips=True)
+        if result:
+            return {"message": "Instance deleted successfully"}
+        else:
+            return {"error": "Instance deletion unsuccessful"}
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
