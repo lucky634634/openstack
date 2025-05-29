@@ -38,6 +38,15 @@ async def health():
     return {"status": "OK"}
 
 
+# @app.get("/test")
+# async def test():
+#     instances = conn.get_server()
+#     if instances is None:
+#         return {"error": "No instances found"}
+#     if len(instances) == 0:
+#         return []
+
+
 @app.get("/networks/")
 async def get_networks():
     try:
@@ -364,6 +373,7 @@ async def get_images():
     images = conn.list_images()
     return [
         Image(
+            id=image.id,
             name=image.name,
             disk_format=image.disk_format,
         )
@@ -377,6 +387,7 @@ async def get_image(image_name: str):
     if image is None:
         return {"error": "Image not found"}
     return Image(
+        id=image.id,
         name=image.name,
         disk_format=image.disk_format,
     )
@@ -388,26 +399,39 @@ async def get_instances():
         instances = conn.list_servers()
         return [
             Instance(
-                id=instance.id,  # type: ignore
-                name=instance.name,  # type: ignore
-                status=instance.status,  # type: ignore
+                id=instance.id,
+                name=instance.name,
+                status=instance.status,
+                image_id=instance.image.id,
+                flavor_id=instance.flavor.id,
+                network_list=[
+                    network_name for network_name, _ in instance.addresses.items()
+                ],
             )
             for instance in instances
         ]
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/instances/{instance_id}")
 async def get_instance(instance_id: str):
-    instance = conn.get_server(instance_id)
-    if instance is None:
-        return {"error": "Instance not found"}
-    return Instance(
-        id=instance.id,
-        name=instance.name,
-        status=instance.status,
-    )
+    try:
+        instance = conn.get_server(instance_id)
+        if instance is None:
+            return HTTPException(status_code=500, detail="Cannot find the instance")
+        return Instance(
+            id=instance.id,
+            name=instance.name,
+            status=instance.status,
+            image_id=instance.image.id,
+            flavor_id=instance.flavor.id,
+            network_list=[
+                network_name for network_name, _ in instance.addresses.items()
+            ],
+        )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/create-instance")
@@ -440,10 +464,16 @@ async def create_instance(payload: CreateVMRequest):
         )
 
         conn.wait_for_server(instance)
+
         return Instance(
             id=instance.id,
             name=instance.name,
             status=instance.status,
+            image_id=instance.image.id,
+            flavor_id=instance.flavor.id,
+            network_list=[
+                network_name for network_name, _ in instance.addresses.items()
+            ],
         )
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))

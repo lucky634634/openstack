@@ -6,9 +6,13 @@ class Instance(BaseModel):
     id: str
     name: str
     status: str
+    image_id: str
+    flavor_id: str
+    network_list: List[str]
 
 
 class Image(BaseModel):
+    id: str
     name: str
     disk_format: str
 

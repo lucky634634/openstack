@@ -210,6 +210,16 @@ export default function CreateNetworkDialog({ open, handleClose }) {
                     label="Disable Gateway"
                 />
 
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={enableDHCP}
+                            onChange={(e) => setEnableDHCP(e.target.checked)}
+                        />
+                    }
+                    label="Enable DHCP"
+                />
+
                 <TextField
                     margin="dense"
                     label="Add DNS Nameserver"
@@ -222,16 +232,6 @@ export default function CreateNetworkDialog({ open, handleClose }) {
                             handleAddDns();
                         }
                     }}
-                />
-
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            checked={enableDHCP}
-                            onChange={(e) => setEnableDHCP(e.target.checked)}
-                        />
-                    }
-                    label="Enable DHCP"
                 />
 
                 <Button onClick={handleAddDns} size="small" sx={{ mt: 1, mb: 2 }}>
