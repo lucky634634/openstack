@@ -33,6 +33,7 @@ conn = openstack.connect(cloud="local")
 load_dotenv()
 
 
+@app.get("/")
 @app.get("/health")
 async def health():
     return {"status": "OK"}
@@ -177,7 +178,7 @@ async def delete_network(network: str):
         if result:
             return {"message": "Network deleted successfully"}
         else:
-            return {"error": "Network deleted unsuccessfully"}
+            return HTTPException(status_code=500, detail=str("Deleted network failed"))
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -273,7 +274,7 @@ async def update_subnet(
         if result:
             return {"message": "Subnet updated successfully"}
         else:
-            return {"error": "Subnet update unsuccessful"}
+            return HTTPException(status_code=500, detail=str("Subnet update failed"))
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -285,16 +286,38 @@ async def delete_subnet(subnet: str):
         if result:
             return {"message": "Subnet deleted successfully"}
         else:
-            return {"error": "Subnet deleted unsuccessfully"}
+            return HTTPException(status_code=500, detail=str("Deleted subnet failed"))
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/flavors/")
 async def get_flavors():
-    flavors = conn.list_flavors()
-    return [
-        Flavor(
+    try:
+        flavors = conn.list_flavors()
+        return [
+            Flavor(
+                id=flavor.id,
+                name=flavor.name,
+                ram=flavor.ram,
+                disk=flavor.disk,
+                ephemeral=flavor.ephemeral,
+                vcpus=flavor.vcpus,
+                description="" if flavor.description is None else flavor.description,
+            )
+            for flavor in flavors
+        ]
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/flavors/{flavor_id}")
+async def get_flavor(flavor_id: str):
+    try:
+        flavor = conn.get_flavor(flavor_id)
+        if flavor is None:
+            return HTTPException(status_code=500, detail=str("Flavor not found"))
+        return Flavor(
             id=flavor.id,
             name=flavor.name,
             ram=flavor.ram,
@@ -303,24 +326,8 @@ async def get_flavors():
             vcpus=flavor.vcpus,
             description="" if flavor.description is None else flavor.description,
         )
-        for flavor in flavors
-    ]
-
-
-@app.get("/flavors/{flavor_id}")
-async def get_flavor(flavor_id: str):
-    flavor = conn.get_flavor(flavor_id)
-    if flavor is None:
-        return {"error": "Flavor not found"}
-    return Flavor(
-        id=flavor.id,
-        name=flavor.name,
-        ram=flavor.ram,
-        disk=flavor.disk,
-        ephemeral=flavor.ephemeral,
-        vcpus=flavor.vcpus,
-        description="" if flavor.description is None else flavor.description,
-    )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/create-flavors")
