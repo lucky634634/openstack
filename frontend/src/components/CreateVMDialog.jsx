@@ -16,7 +16,6 @@ import {
     Select,
     TextField
 } from "@mui/material"
-import DeleteIcon from "@mui/icons-material/Delete"
 import { useEffect, useState } from "react";
 import api from "../api";
 

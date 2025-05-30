@@ -74,3 +74,12 @@ class CreateVMRequest(BaseModel):
     flavor: str
     network: str
     userdata: Optional[str] = None
+
+
+class CreateFlavorRequest(BaseModel):
+    name: str
+    ram: int
+    disk: int
+    ephemeral: int = 0
+    vcpus: int
+    description: Optional[str] = None

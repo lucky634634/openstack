@@ -324,22 +324,15 @@ async def get_flavor(flavor_id: str):
 
 
 @app.post("/create-flavors")
-async def create_flavors(
-    name: str,
-    ram: int,
-    disk: int,
-    ephemeral: int,
-    vcpus: int,
-    description: Optional[str] = None,
-):
+async def create_flavors(payload: CreateFlavorRequest):
     try:
         flavor = conn.create_flavor(
-            name=name,
-            ram=ram,
-            disk=disk,
-            ephemeral=ephemeral,
-            vcpus=vcpus,
-            description=description,
+            name=payload.name,
+            ram=payload.ram,
+            disk=payload.disk,
+            ephemeral=payload.ephemeral,
+            vcpus=payload.vcpus,
+            description=payload.description,
         )
         if flavor is None:
             return HTTPException(status_code=500, detail="Flavor is not found")
