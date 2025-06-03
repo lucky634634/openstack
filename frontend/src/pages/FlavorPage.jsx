@@ -8,7 +8,10 @@ export default function FlavorPage() {
     const columns = [
         { field: 'id', headerName: 'ID', flex: 1 },
         { field: 'name', headerName: 'Name', width: 120 },
-        { field: 'status', headerName: 'Status', width: 120 },
+        { field: 'vcpus', headerName: 'VCPUS', width: 90 },
+        { field: 'ram', headerName: 'RAM', width: 90 },
+        { field: 'disk', headerName: 'Disk', width: 90 },
+        { field: 'ephemeral', headerName: 'Ephemeral', width: 90 },
     ];
 
     const [rows, setRows] = useState([])

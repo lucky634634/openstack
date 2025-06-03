@@ -2,6 +2,12 @@ from pydantic import BaseModel
 from typing import Dict, List, Optional
 
 
+class Instance(BaseModel):
+    id: str
+    name: str
+    status: str
+
+
 class CreateNetworkWithSubnetRequest(BaseModel):
     name: str
     external: bool = False

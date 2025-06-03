@@ -3,9 +3,9 @@ from typing import Optional
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import InstanceOf
 import uvicorn
 import openstack
+from openstack.compute.v2.server import Server
 import sys
 from dotenv import load_dotenv
 import os
@@ -301,7 +301,15 @@ async def get_image(image_name: str):
 async def get_instances():
     try:
         instances = conn.list_servers()
-        return [instance for instance in instances]
+        return [
+            Instance(
+                id=instance.id,
+                name=instance.name,
+                status=instance.status,
+            )
+            for instance in instances
+        ]
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -312,7 +320,11 @@ async def get_instance(instance_id: str):
         instance = conn.get_server(instance_id)
         if instance is None:
             return HTTPException(status_code=500, detail="Cannot find the instance")
-        return instance
+        return Instance(
+            id=instance.id,
+            name=instance.name,
+            status=instance.status,
+        )
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -320,15 +332,6 @@ async def get_instance(instance_id: str):
 @app.post("/create-instance")
 async def create_instance(payload: CreateVMRequest):
     try:
-        image = conn.get_image(payload.image)
-        if image is None:
-            return HTTPException(status_code=404, detail="Image not found")
-        flavor = conn.get_flavor(payload.flavor)
-        if flavor is None:
-            return HTTPException(status_code=404, detail="Flavor not found")
-        network = conn.get_network(payload.network)
-        if network is None:
-            return HTTPException(status_code=404, detail="Network not found")
         user_data = (
             ""
             if payload.userdata is None or payload.userdata == ""
@@ -339,13 +342,18 @@ async def create_instance(payload: CreateVMRequest):
                 user_data = f.read()
         instance = conn.create_server(
             name=payload.name,
-            image=image,
-            flavor=flavor,
-            network=network,
+            image=payload.image,
+            flavor=payload.flavor,
+            network=payload.network,
             auto_ip=True,
             userdata=user_data,
         )
-        return instance
+        conn.wait_for_server(instance)
+        return Instance(
+            id=instance.id,
+            name=instance.name,
+            status=instance.status,
+        )
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -415,21 +423,6 @@ async def add_interface_to_router(router_id: str, subnet_id: str):
 
 
 if __name__ == "__main__":
-    for router in conn.list_routers():
-        print(
-            "-------------------------------------------------------------------------------------"
-        )
-        print(router)
-        for port in conn.list_router_interfaces(router):
-            print(
-                "-------------------------------------------------------------------------------------"
-            )
-            print(port)
-            for fixed_ip in port.fixed_ips:
-                print(
-                    "-------------------------------------------------------------------------------------"
-                )
-                print(fixed_ip)
     host = str(os.getenv("HOST_IP", "localhost"))
     port = int(os.getenv("PORT", 8080))
     uvicorn.run(app, host=host, port=port)

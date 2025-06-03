@@ -12,6 +12,7 @@ function NetworkPage() {
         { field: 'subnet_ids', headerName: 'Subnet', width: 120 },
         { field: 'status', headerName: 'Status', width: 90 },
         { field: 'external', headerName: 'External', width: 90 },
+        { field: 'provider_network_type', headerName: 'Provider Network Type', width: 120 },
     ];
 
     const [rows, setRows] = useState([])
