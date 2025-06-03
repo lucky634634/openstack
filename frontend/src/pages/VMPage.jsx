@@ -44,7 +44,7 @@ export default function VMPage() {
                     console.error(error);
                 })
         }
-        fetchData()
+        await fetchData()
     }
 
     return <>

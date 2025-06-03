@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { Box, Button, Typography, Dialog, DialogTitle, DialogContent } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import api from "../api";
-import CreateFlavorDialog from "../components/CreateFlavorDialog";
 
-export default function FlavorPage() {
+export default function RouterPage() {
     const columns = [
         { field: 'id', headerName: 'ID', flex: 1 },
         { field: 'name', headerName: 'Name', width: 120 },
@@ -18,7 +17,7 @@ export default function FlavorPage() {
     const [open, setOpen] = useState(false);
 
     async function fetchData() {
-        await api.get('/flavors')
+        await api.get('/routers')
             .then(response => {
                 console.log(response);
                 try {
@@ -33,16 +32,16 @@ export default function FlavorPage() {
     }
 
     async function deleteData() {
-        for (let id of selectedIds) {
-            await api.delete("/delete-flavor", { params: { instance: id } })
-                .then(response => {
-                    console.log(response);
-                    alert("Instance deleted successfully");
-                })
-                .catch(error => {
-                    console.error(error);
-                })
-        }
+        // for (let id of selectedIds) {
+        //     await api.delete("/delete-flavor", { params: { instance: id } })
+        //         .then(response => {
+        //             console.log(response);
+        //             alert("Instance deleted successfully");
+        //         })
+        //         .catch(error => {
+        //             console.error(error);
+        //         })
+        // }
         await fetchData()
     }
 
@@ -78,6 +77,5 @@ export default function FlavorPage() {
         <Box sx={{ width: "100%", height: "600px" }}>
             <DataGrid rows={rows} columns={columns} checkboxSelection onRowSelectionModelChange={(ids) => setSelectedIds(Array.from(ids.ids))} />
         </Box>
-        <CreateFlavorDialog open={open} handleClose={() => { setOpen(false) }} />
     </>
 }

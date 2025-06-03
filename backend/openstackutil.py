@@ -1,55 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
-
-
-class Instance(BaseModel):
-    id: str
-    name: str
-    status: str
-    image_id: str
-    flavor_id: str
-    network_list: List[str]
-
-
-class Image(BaseModel):
-    id: str
-    name: str
-    disk_format: str
-
-
-class Flavor(BaseModel):
-    id: str
-    name: str
-    ram: int
-    disk: int
-    ephemeral: int
-    vcpus: int
-    description: str
-
-
-class Network(BaseModel):
-    id: str
-    name: str
-    description: str
-    status: str
-    subnet_ids: List[str]
-    external: bool
-    created_date: str
-    updated_date: str
-
-
-class Subnet(BaseModel):
-    id: str
-    name: str
-    network_id: str
-    description: str
-    cidr: str
-    dns_nameservers: Optional[List[str]] = []
-    gateway_ip: Optional[str] = ""
-
-
-class Router(BaseModel):
-    id: str
+from typing import Dict, List, Optional
 
 
 class CreateNetworkWithSubnetRequest(BaseModel):
@@ -83,3 +33,8 @@ class CreateFlavorRequest(BaseModel):
     ephemeral: int = 0
     vcpus: int
     description: Optional[str] = None
+
+
+class CreateRouterRequest(BaseModel):
+    name: str
+    external_network: str

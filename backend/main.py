@@ -52,19 +52,7 @@ async def health():
 async def get_networks():
     try:
         networks = conn.list_networks()
-        return [
-            Network(
-                id=net.id,
-                name=net.name,
-                description=net.description,
-                status=net.status,
-                subnet_ids=net.subnet_ids,
-                external=net.is_router_external,
-                created_date=net.created_at,
-                updated_date=net.updated_at,
-            )
-            for net in networks
-        ]
+        return [net for net in networks]
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -73,16 +61,7 @@ async def get_networks():
 async def get_network(network_id: str):
     try:
         network = conn.get_network(network_id)
-        return Network(
-            id=network.id,
-            name=network.name,
-            description=network.description,
-            status=network.status,
-            subnet_ids=network.subnet_ids,
-            external=network.is_router_external,
-            created_date=network.created_at,
-            updated_date=network.updated_at,
-        )
+        return network
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -117,17 +96,7 @@ async def create_network(
         if network is None:
             return HTTPException(status_code=500, detail="Create network failed")
 
-        return Network(
-            id=network.id,
-            name=network.name,
-            description=network.description,
-            subnet_ids=network.subnet_ids,
-            status=network.status,
-            external=network.is_router_external,
-            created_date=network.created_at,
-            updated_date=network.updated_at,
-        )
-
+        return network
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -187,18 +156,7 @@ async def delete_network(network: str):
 async def get_subnets():
     try:
         subnets = conn.list_subnets()
-        return [
-            Subnet(
-                id=subnet.id,
-                name=subnet.name,
-                network_id=subnet.network_id,
-                description=subnet.description,
-                cidr=subnet.cidr,
-                dns_nameservers=[dns for dns in subnet.dns_nameservers],
-                gateway_ip=subnet.gateway_ip,
-            )
-            for subnet in subnets
-        ]
+        return [subnet for subnet in subnets]
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -208,16 +166,8 @@ async def get_subnet(subnet_id: str):
     try:
         subnet = conn.get_subnet(subnet_id)
         if subnet is None:
-            return {"error": "Subnet not found"}
-        return Subnet(
-            id=subnet.id,
-            name=subnet.name,
-            network_id=subnet.network_id,
-            description=subnet.description,
-            cidr=subnet.cidr,
-            dns_nameservers=[dns for dns in subnet.dns_nameservers],
-            gateway_ip=subnet.gateway_ip,
-        )
+            return HTTPException(status_code=500, detail=str("Subnet not found"))
+        return subnet
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -246,15 +196,7 @@ async def create_subnet(
             dns_nameservers=dns_nameservers,
             disable_gateway_ip=disable_gateway_ip,
         )
-        return Subnet(
-            id=subnet.id,
-            name=subnet.name,
-            network_id=subnet.network_id,
-            description=subnet.description,
-            cidr=subnet.cidr,
-            dns_nameservers=[dns for dns in subnet.dns_nameservers],
-            gateway_ip=subnet.gateway_ip,
-        )
+        return subnet
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -295,18 +237,7 @@ async def delete_subnet(subnet: str):
 async def get_flavors():
     try:
         flavors = conn.list_flavors()
-        return [
-            Flavor(
-                id=flavor.id,
-                name=flavor.name,
-                ram=flavor.ram,
-                disk=flavor.disk,
-                ephemeral=flavor.ephemeral,
-                vcpus=flavor.vcpus,
-                description="" if flavor.description is None else flavor.description,
-            )
-            for flavor in flavors
-        ]
+        return [flavor for flavor in flavors]
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -317,15 +248,7 @@ async def get_flavor(flavor_id: str):
         flavor = conn.get_flavor(flavor_id)
         if flavor is None:
             return HTTPException(status_code=500, detail=str("Flavor not found"))
-        return Flavor(
-            id=flavor.id,
-            name=flavor.name,
-            ram=flavor.ram,
-            disk=flavor.disk,
-            ephemeral=flavor.ephemeral,
-            vcpus=flavor.vcpus,
-            description="" if flavor.description is None else flavor.description,
-        )
+        return flavor
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -343,15 +266,7 @@ async def create_flavors(payload: CreateFlavorRequest):
         )
         if flavor is None:
             return HTTPException(status_code=500, detail="Flavor is not found")
-        return Flavor(
-            id=flavor.id,
-            name=flavor.name,
-            ram=flavor.ram,
-            disk=flavor.disk,
-            ephemeral=flavor.ephemeral,
-            vcpus=flavor.vcpus,
-            description="" if flavor.description is None else flavor.description,
-        )
+        return flavor
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -363,7 +278,7 @@ async def delete_flavor(flavor: str):
         if result:
             return {"message": "Flavor deleted successfully"}
         else:
-            return {"error": "Flavor deleted unsuccessfully"}
+            return HTTPException(status_code=500, detail=str("Flavor deletion failed"))
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -371,14 +286,7 @@ async def delete_flavor(flavor: str):
 @app.get("/images")
 async def get_images():
     images = conn.list_images()
-    return [
-        Image(
-            id=image.id,
-            name=image.name,
-            disk_format=image.disk_format,
-        )
-        for image in images
-    ]
+    return [image for image in images]
 
 
 @app.get("/images/{image_name}")
@@ -386,30 +294,14 @@ async def get_image(image_name: str):
     image = conn.get_image(image_name)
     if image is None:
         return {"error": "Image not found"}
-    return Image(
-        id=image.id,
-        name=image.name,
-        disk_format=image.disk_format,
-    )
+    return image
 
 
 @app.get("/instances")
 async def get_instances():
     try:
         instances = conn.list_servers()
-        return [
-            Instance(
-                id=instance.id,
-                name=instance.name,
-                status=instance.status,
-                image_id=instance.image.id,
-                flavor_id=instance.flavor.id,
-                network_list=[
-                    network_name for network_name, _ in instance.addresses.items()
-                ],
-            )
-            for instance in instances
-        ]
+        return [instance for instance in instances]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -420,16 +312,7 @@ async def get_instance(instance_id: str):
         instance = conn.get_server(instance_id)
         if instance is None:
             return HTTPException(status_code=500, detail="Cannot find the instance")
-        return Instance(
-            id=instance.id,
-            name=instance.name,
-            status=instance.status,
-            image_id=instance.image.id,
-            flavor_id=instance.flavor.id,
-            network_list=[
-                network_name for network_name, _ in instance.addresses.items()
-            ],
-        )
+        return instance
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -462,19 +345,7 @@ async def create_instance(payload: CreateVMRequest):
             auto_ip=True,
             userdata=user_data,
         )
-
-        conn.wait_for_server(instance)
-
-        return Instance(
-            id=instance.id,
-            name=instance.name,
-            status=instance.status,
-            image_id=instance.image.id,
-            flavor_id=instance.flavor.id,
-            network_list=[
-                network_name for network_name, _ in instance.addresses.items()
-            ],
-        )
+        return instance
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -486,12 +357,79 @@ async def delete_instance(instance: str):
         if result:
             return {"message": "Instance deleted successfully"}
         else:
-            return {"error": "Instance deletion unsuccessful"}
+            return HTTPException(
+                status_code=500, detail=str("Instance deletion failed")
+            )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/routers")
+async def get_routers():
+    try:
+        routers = conn.list_routers()
+        return [router for router in routers]
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/routers/{router_id}")
+async def get_router(router_id: str):
+    try:
+        router = conn.get_router(router_id)
+        if router is None:
+            return HTTPException(status_code=500, detail="Router not found")
+        return router
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/create-router")
+async def create_router(payload: CreateRouterRequest):
+    try:
+        external_net = conn.get_network(payload.external_network)
+        if external_net is None:
+            return HTTPException(status_code=404, detail="External network not found")
+        router = conn.create_router(
+            name=payload.name, ext_gateway_net_id=external_net.id, enable_snat=True
+        )
+        if router is None:
+            return HTTPException(status_code=500, detail="Create router failed")
+        return router
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.put("/add-interface-to-router")
+async def add_interface_to_router(router_id: str, subnet_id: str):
+    try:
+        router = conn.get_router(router_id)
+        if router is None:
+            return HTTPException(status_code=404, detail="Router not found")
+        subnet = conn.get_subnet(subnet_id)
+        if subnet is None:
+            return HTTPException(status_code=404, detail="Subnet not found")
+        return conn.add_router_interface(router, subnet.id)
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":
+    for router in conn.list_routers():
+        print(
+            "-------------------------------------------------------------------------------------"
+        )
+        print(router)
+        for port in conn.list_router_interfaces(router):
+            print(
+                "-------------------------------------------------------------------------------------"
+            )
+            print(port)
+            for fixed_ip in port.fixed_ips:
+                print(
+                    "-------------------------------------------------------------------------------------"
+                )
+                print(fixed_ip)
     host = str(os.getenv("HOST_IP", "localhost"))
     port = int(os.getenv("PORT", 8080))
     uvicorn.run(app, host=host, port=port)

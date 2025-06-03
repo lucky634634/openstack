@@ -21,6 +21,7 @@ const navItems = [
     { text: "Network", icon: <CloudQueueIcon />, path: "/network" },
     { text: "VM", icon: <ComputerIcon />, path: "/vm" },
     { text: "Flavor", icon: <ComputerIcon />, path: "/flavor" },
+    { text: "Router", icon: <ComputerIcon />, path: "/router" },
 ];
 
 function Sidebar() {
