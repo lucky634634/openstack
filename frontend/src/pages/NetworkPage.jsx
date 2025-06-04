@@ -84,7 +84,12 @@ function NetworkPage() {
             >Detail</Button>
         </Box>
         <Box sx={{ width: "100%", height: "600px" }}>
-            <DataGrid rows={rows} columns={columns} checkboxSelection onRowSelectionModelChange={(rows) => setSelectedIds(rows.ids)} />
+            <DataGrid
+                rows={rows}
+                columns={columns}
+                checkboxSelection
+                onRowSelectionModelChange={(rows) => setSelectedIds(rows.ids)}
+            />
         </Box>
         <CreateNetworkDialog
             open={open}

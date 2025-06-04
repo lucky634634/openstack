@@ -79,7 +79,12 @@ export default function FlavorPage() {
             </Button>
         </Box >
         <Box sx={{ width: "100%", height: "600px" }}>
-            <DataGrid rows={rows} columns={columns} checkboxSelection onRowSelectionModelChange={(ids) => setSelectedIds(Array.from(ids.ids))} />
+            <DataGrid
+                rows={rows}
+                columns={columns}
+                checkboxSelection
+                onRowSelectionModelChange={(rows) => setSelectedIds(rows.ids)}
+            />
         </Box>
         <CreateFlavorDialog open={open} handleClose={() => { setOpen(false) }} />
     </>

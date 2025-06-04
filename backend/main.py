@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 import uvicorn
 import openstack
 from openstack.compute.v2.server import Server
+from openstack.network.v2.router import Router
 import sys
 from dotenv import load_dotenv
 import os
@@ -24,9 +25,7 @@ app.add_middleware(
 )
 
 # openstack
-openstack.enable_logging(
-    debug=True, path="openstack.log", stream=sys.stdout, format_stream=True
-)
+openstack.enable_logging(debug=True, path="openstack.log", format_stream=True)
 
 conn = openstack.connect(cloud="local")
 
@@ -173,28 +172,19 @@ async def get_subnet(subnet_id: str):
 
 
 @app.post("/create-subnet")
-async def create_subnet(
-    network: str,
-    subnet_name: str,
-    cidr: str,
-    ip_version: int = 4,
-    disable_gateway_ip: bool = False,
-    gateway_ip: Optional[str] = None,
-    enable_dhcp: bool = True,
-    dns_nameservers: Optional[List[str]] = Query(None),
-):
+async def create_subnet(payload: CreateSubnetRequest):
     try:
-        if "/" not in cidr:
-            cidr = f"{cidr}/24"
+        if "/" not in payload.cidr:
+            cidr = f"{payload.cidr}/24"
         subnet = conn.create_subnet(
-            network_name_or_id=network,
-            name=subnet_name,
-            cidr=cidr,
-            ip_version=ip_version,
-            enable_dhcp=enable_dhcp,
-            gateway_ip=gateway_ip,
-            dns_nameservers=dns_nameservers,
-            disable_gateway_ip=disable_gateway_ip,
+            network_name_or_id=payload.network,
+            name=payload.subnet_name,
+            cidr=payload.cidr,
+            ip_version=payload.ip_version,
+            enable_dhcp=payload.enable_dhcp,
+            gateway_ip=payload.gateway_ip,
+            dns_nameservers=payload.dns_nameservers,
+            disable_gateway_ip=payload.disable_gateway_ip,
         )
         return subnet
     except Exception as e:
@@ -348,7 +338,7 @@ async def create_instance(payload: CreateVMRequest):
             auto_ip=True,
             userdata=user_data,
         )
-        conn.wait_for_server(instance)
+        # conn.wait_for_server(instance)
         return Instance(
             id=instance.id,
             name=instance.name,
@@ -408,8 +398,20 @@ async def create_router(payload: CreateRouterRequest):
         return HTTPException(status_code=500, detail=str(e))
 
 
-@app.put("/add-interface-to-router")
-async def add_interface_to_router(router_id: str, subnet_id: str):
+@app.get("/ports")
+async def get_ports(router_id: str):
+    try:
+        router = conn.get_router(name_or_id=router_id)
+        if router is None:
+            return HTTPException(status_code=404, detail="Router not found")
+        ports = conn.list_router_interfaces(router=router)
+        return ports
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.put("/add-interface")
+async def add_interface(router_id: str, subnet_id: str):
     try:
         router = conn.get_router(router_id)
         if router is None:
@@ -422,7 +424,79 @@ async def add_interface_to_router(router_id: str, subnet_id: str):
         return HTTPException(status_code=500, detail=str(e))
 
 
+@app.delete("/remove-interface")
+async def remove_interface(
+    router_id: str, subnet_id: Optional[str] = None, port_id: Optional[str] = None
+):
+    try:
+        router = conn.get_router(router_id)
+        conn.remove_router_interface(
+            router=router, subnet_id=subnet_id, port_id=port_id
+        )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/delete-router")
+async def delete_router(router_id: str):
+    try:
+        router = conn.get_router(router_id)
+        if router.external_gateway_info:
+            conn.update_router(router.id, ext_gateway_net_id=None)
+        ports = conn.list_router_interfaces(router)
+        for port in ports:
+            if port.device_owner in [
+                "network:router_interface",
+                "network:router_gateway",
+            ]:
+                conn.remove_router_interface(router.id, port_id=port.id)
+            conn.delete_port(port.id)
+        result = conn.delete_router(router_id)
+        if result:
+            return {"message": "Router deleted successfully"}
+        else:
+            return HTTPException(status_code=500, detail=str("Router deletion failed"))
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.put("/add-route")
+async def add_route(payload: AddRouteRequest):
+    try:
+        router = conn.get_router(name_or_id=payload.router)
+        print(type(router))
+        if router is None:
+            return HTTPException(status_code=404, detail="Router not found")
+        routes = router.routes
+        routes.append({"destination": payload.destination, "nexthop": payload.nexthop})
+        return conn.update_router(name_or_id=router.id, routes=routes)
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/delete-route")
+async def delete_route(payload: DeleteRouteRequest):
+    try:
+        router = conn.get_router(name_or_id=payload.router)
+        if router is None:
+            return HTTPException(status_code=404, detail="Router not found")
+        routes = [
+            route
+            for route in router.routes
+            if route["destination"] != payload.destination
+        ]
+        print(routes)
+        return conn.update_router(name_or_id=router.id, routes=routes)
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
+    for router in conn.list_routers():
+        print(
+            "-------------------------------------------------------------------------------\n",
+            type(router),
+        )
     host = str(os.getenv("HOST_IP", "localhost"))
     port = int(os.getenv("PORT", 8080))
     uvicorn.run(app, host=host, port=port)

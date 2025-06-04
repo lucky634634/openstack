@@ -1,3 +1,4 @@
+
 import {
     Button,
     Checkbox,
@@ -19,21 +20,15 @@ import {
 import { useEffect, useState } from "react";
 import api from "../api";
 
-export default function CreateVMDialog({ open, handleClose }) {
+export default function CreateRouterDialog({ open, handleClose }) {
     const [name, setName] = useState("");
-    const [imageList, setImageList] = useState([])
-    const [image, setImage] = useState("")
-    const [flavorList, setFlavorList] = useState([])
-    const [flavor, setFlavor] = useState("")
     const [networkList, setNetworkList] = useState([])
     const [network, setNetwork] = useState("")
 
     async function createVM() {
-        await api.post('/create-instance', {
+        await api.post('/create-router', {
             name: name,
-            image: image,
-            flavor: flavor,
-            network: network,
+            external_network: network,
         })
             .then(response => {
                 console.log(response);
@@ -42,36 +37,6 @@ export default function CreateVMDialog({ open, handleClose }) {
             .catch(error => {
                 console.error(error);
                 alert(error)
-            })
-    }
-
-    async function fetchImageList() {
-        await api.get('/images')
-            .then(response => {
-                console.log(response);
-                try {
-                    setImageList(response.data);
-                } catch (error) {
-                    console.error(error);
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }
-
-    async function fetchFlavorList() {
-        await api.get('/flavors')
-            .then(response => {
-                console.log(response);
-                try {
-                    setFlavorList(response.data);
-                } catch (error) {
-                    console.error(error);
-                }
-            })
-            .catch(error => {
-                console.error(error);
             })
     }
 
@@ -98,15 +63,11 @@ export default function CreateVMDialog({ open, handleClose }) {
 
     const handleCancel = () => {
         setName("");
-        setImage("")
-        setFlavor("")
         setNetwork("")
         handleClose()
     };
 
     useEffect(() => {
-        fetchImageList()
-        fetchFlavorList()
         fetchNetworkList()
     }, [])
 
@@ -125,39 +86,11 @@ export default function CreateVMDialog({ open, handleClose }) {
                 />
 
                 <FormControl fullWidth margin="dense">
-                    <InputLabel>Image</InputLabel>
-                    <Select
-                        value={image}
-                        onChange={(e) => setImage(e.target.value)}
-                        label="Image"
-                    >
-                        {imageList.map((image, index) => (
-                            <MenuItem key={index} value={image.name}>
-                                {image.name}
-                            </MenuItem>))}
-                    </Select>
-                </FormControl>
-
-                <FormControl fullWidth margin="dense">
-                    <InputLabel>Flavor</InputLabel>
-                    <Select
-                        value={flavor}
-                        onChange={(e) => setFlavor(e.target.value)}
-                        label="Flavor"
-                    >
-                        {flavorList.map((flavor, index) => (
-                            <MenuItem key={index} value={flavor.name}>
-                                {flavor.name}
-                            </MenuItem>))}
-                    </Select>
-                </FormControl>
-
-                <FormControl fullWidth margin="dense">
                     <InputLabel>Network</InputLabel>
                     <Select
                         value={network}
                         onChange={(e) => setNetwork(e.target.value)}
-                        label="Network"
+                        label="External network"
                     >
                         {networkList.map((network, index) => (
                             <MenuItem key={index} value={network.name}>

@@ -10,6 +10,7 @@ import VMPage from "./pages/VMPage";
 import FlavorPage from "./pages/FlavorPage";
 import RouterPage from "./pages/RouterPage";
 import NetworkDetailPage from "./pages/NetworkDetailPage";
+import RouterDetailPage from "./pages/RouterDetailPage";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <Route path="/flavor" element={<FlavorPage />} />
             <Route path="/router" element={<RouterPage />} />
             <Route path="/network/:id" element={<NetworkDetailPage />} />
+            <Route path="/router/:id" element={<RouterDetailPage />} />
           </Routes>
         </Box>
       </Box>

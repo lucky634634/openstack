@@ -24,6 +24,17 @@ class CreateNetworkWithSubnetRequest(BaseModel):
     dns_nameservers: Optional[List[str]] = None
 
 
+class CreateSubnetRequest(BaseModel):
+    network: str
+    subnet_name: str
+    cidr: str
+    ip_version: int = 4
+    disable_gateway_ip: bool = False
+    gateway_ip: Optional[str] = None
+    enable_dhcp: bool = True
+    dns_nameservers: Optional[List[str]] = None
+
+
 class CreateVMRequest(BaseModel):
     name: str
     image: str
@@ -44,3 +55,14 @@ class CreateFlavorRequest(BaseModel):
 class CreateRouterRequest(BaseModel):
     name: str
     external_network: str
+
+
+class AddRouteRequest(BaseModel):
+    router: str
+    destination: str
+    nexthop: str
+
+
+class DeleteRouteRequest(BaseModel):
+    router: str
+    destination: str

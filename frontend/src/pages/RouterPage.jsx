@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Box, Button, Typography, Dialog, DialogTitle, DialogContent } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import api from "../api";
+import CreateRouterDialog from "../components/CreateRouterDialog";
 
 export default function RouterPage() {
     const columns = [
@@ -32,16 +33,16 @@ export default function RouterPage() {
     }
 
     async function deleteData() {
-        // for (let id of selectedIds) {
-        //     await api.delete("/delete-flavor", { params: { instance: id } })
-        //         .then(response => {
-        //             console.log(response);
-        //             alert("Instance deleted successfully");
-        //         })
-        //         .catch(error => {
-        //             console.error(error);
-        //         })
-        // }
+        for (let id of selectedIds) {
+            await api.delete("/delete-router", { params: { instance: id } })
+                .then(response => {
+                    console.log(response);
+                    alert("Instance deleted successfully");
+                })
+                .catch(error => {
+                    console.error(error);
+                })
+        }
         await fetchData()
     }
 
@@ -75,7 +76,13 @@ export default function RouterPage() {
             </Button>
         </Box >
         <Box sx={{ width: "100%", height: "600px" }}>
-            <DataGrid rows={rows} columns={columns} checkboxSelection onRowSelectionModelChange={(ids) => setSelectedIds(Array.from(ids.ids))} />
+            <DataGrid
+                rows={rows}
+                columns={columns}
+                checkboxSelection
+                onRowSelectionModelChange={(ids) => setSelectedIds(ids.ids)}
+            />
         </Box>
+        <CreateRouterDialog open={open} handleClose={() => { setOpen(false) }} />
     </>
 }
