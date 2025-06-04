@@ -47,6 +47,35 @@ export default function RouterDetailPage() {
             })
     }
 
+    async function deleteRoutes() {
+        for (let id of selectedRoutes) {
+            const route = routeList.find((route) => route.id === id)
+            await api.delete("/delete-route", { router: router.id, destination: route.destination, nexthop: route.nexthop })
+                .then(response => {
+                    console.log(response);
+                    alert("Route deleted successfully");
+                })
+                .catch(error => {
+                    console.error(error);
+                })
+        }
+        await fetchData()
+    }
+
+    async function deletePorts() {
+        for (let id of selectedPorts) {
+            await api.delete("/delete-port", { router: router.id, port: id })
+                .then(response => {
+                    console.log(response);
+                    alert("Port deleted successfully");
+                })
+                .catch(error => {
+                    console.error(error);
+                })
+        }
+        await fetchData()
+    }
+
     useEffect(() => {
         fetchData()
     })
@@ -56,6 +85,8 @@ export default function RouterDetailPage() {
         <Box>
             <Box>
                 <Button
+                    variant="contained"
+                    color="primary"
                     onClick={fetchData}
                 >
                     refresh
@@ -63,6 +94,14 @@ export default function RouterDetailPage() {
             </Box>
             <Box>
                 <Box>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        disabled={selectedPorts.length === undefined || selectedPorts.length === 0}
+                        onClick={deletePorts}
+                    >
+                        delete
+                    </Button>
 
                 </Box>
                 <DataGrid
@@ -73,7 +112,17 @@ export default function RouterDetailPage() {
                 />
             </Box>
             <Box>
-                <Box></Box>
+                <Box>
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        disabled={selectedRoutes.length === undefined || selectedRoutes.length === 0}
+                        onClick={deleteRoutes}
+                    >
+                        delete
+                    </Button>
+                </Box>
                 <DataGrid
                     columns={routeColumns}
                     rows={router.routes}
