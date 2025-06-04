@@ -484,6 +484,7 @@ async def delete_route(payload: DeleteRouteRequest):
             route
             for route in router.routes
             if route["destination"] != payload.destination
+            or route["nexthop"] != payload.nexthop
         ]
         print(routes)
         return conn.update_router(name_or_id=router.id, routes=routes)

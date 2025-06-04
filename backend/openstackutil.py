@@ -66,3 +66,4 @@ class AddRouteRequest(BaseModel):
 class DeleteRouteRequest(BaseModel):
     router: str
     destination: str
+    nexthop: str
