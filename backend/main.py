@@ -411,12 +411,12 @@ async def get_ports(router_id: str):
 
 
 @app.put("/add-interface")
-async def add_interface(router_id: str, subnet_id: str):
+async def add_interface(payload: AddInterfaceRequest):
     try:
-        router = conn.get_router(router_id)
+        router = conn.get_router(payload.router)
         if router is None:
             return HTTPException(status_code=404, detail="Router not found")
-        subnet = conn.get_subnet(subnet_id)
+        subnet = conn.get_subnet(payload.subnet)
         if subnet is None:
             return HTTPException(status_code=404, detail="Subnet not found")
         return conn.add_router_interface(router, subnet.id)

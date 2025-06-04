@@ -57,6 +57,11 @@ class CreateRouterRequest(BaseModel):
     external_network: str
 
 
+class AddInterfaceRequest(BaseModel):
+    router: str
+    subnet: str
+
+
 class AddRouteRequest(BaseModel):
     router: str
     destination: str

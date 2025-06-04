@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api";
 import { DataGrid } from "@mui/x-data-grid";
+import CreatePortDialog from "../components/CreatePortDialog";
+import CreateRouteDialog from "../components/CreateRouteDialog";
 
 export default function RouterDetailPage() {
     const { id } = useParams();
@@ -12,6 +14,7 @@ export default function RouterDetailPage() {
     ]
     const [portList, setPortList] = useState([])
     const [selectedPorts, setSelectedPorts] = useState([]);
+    const [portOpen, setPortOpen] = useState(false)
 
     const routeColumns = [
         { field: 'id', headerName: 'ID', width: 20 },
@@ -20,6 +23,7 @@ export default function RouterDetailPage() {
     ]
     const [routeList, setRouteList] = useState([])
     const [selectedRoutes, setSelectedRoutes] = useState([])
+    const [routeOpen, setRouteOpen] = useState(false)
 
     async function fetchData() {
         await api.get(`/routers/${id}`)
@@ -131,5 +135,8 @@ export default function RouterDetailPage() {
                 />
             </Box>
         </Box>
+
+        <CreatePortDialog open={portOpen} handleClose={() => setPortOpen(false)} router={router.id} />
+        <CreateRouteDialog open={routeOpen} handleClose={() => setRouteOpen(false)} router={router.id} />
     </>
 }
