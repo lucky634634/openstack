@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api";
@@ -14,17 +14,24 @@ export default function RouterDetailPage() {
     const [selectedPorts, setSelectedPorts] = useState([]);
 
     const routeColumns = [
+        { field: 'id', headerName: 'ID', width: 20 },
         { field: 'destination', headerName: 'Destination' },
         { field: 'nexthop', headerName: 'NextHop' },
     ]
+    const [routeList, setRouteList] = useState([])
     const [selectedRoutes, setSelectedRoutes] = useState([])
-    const [open, setOpen] = useState(false);
 
     async function fetchData() {
         await api.get(`/routers/${id}`)
             .then(response => {
                 console.log(response);
                 setRouter(response.data);
+                let id = 0
+                for (let route in response.data.routes) {
+                    const routeData = { id: id, destination: route.destination, nexthop: route.nexthop }
+                    setRouteList([...routeList, routeData])
+                    id++
+                }
             })
             .catch(error => {
                 console.error(error);
@@ -48,7 +55,16 @@ export default function RouterDetailPage() {
         <Typography variant="h4">Router ${router.name} Detail Page</Typography>
         <Box>
             <Box>
-                <Box></Box>
+                <Button
+                    onClick={fetchData}
+                >
+                    refresh
+                </Button>
+            </Box>
+            <Box>
+                <Box>
+
+                </Box>
                 <DataGrid
                     columns={portColumns}
                     rows={portList}
