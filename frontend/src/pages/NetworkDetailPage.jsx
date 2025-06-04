@@ -49,10 +49,10 @@ export default function NetworkDetailPage() {
 
     async function deleteSubnets() {
         for (let id of selectedIds) {
-            await api.delete(`/subnets/${id}`)
+            await api.delete(`/delete-subnet`, { subnet: id })
                 .then(response => {
                     console.log(response);
-                    alert("Subnet deleted successfully");
+                    alert(`Subnet ${id} deleted successfully`);
                 })
                 .catch(error => {
                     console.error(error);

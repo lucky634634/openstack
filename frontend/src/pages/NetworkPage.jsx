@@ -36,7 +36,7 @@ function NetworkPage() {
             await api.delete("/delete-network", { params: { network: id } })
                 .then(response => {
                     console.log(response);
-                    alert("Network deleted successfully");
+                    alert(`Network ${id} deleted successfully`);
                 })
                 .catch(error => {
                     console.error(error);
