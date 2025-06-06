@@ -493,11 +493,6 @@ async def delete_route(payload: DeleteRouteRequest):
 
 
 if __name__ == "__main__":
-    for router in conn.list_routers():
-        print(
-            "-------------------------------------------------------------------------------\n",
-            type(router),
-        )
     host = str(os.getenv("HOST_IP", "localhost"))
     port = int(os.getenv("PORT", 8080))
     uvicorn.run(app, host=host, port=port)
