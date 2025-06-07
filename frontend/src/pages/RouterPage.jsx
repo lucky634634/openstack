@@ -3,6 +3,7 @@ import { Box, Button, Typography, Dialog, DialogTitle, DialogContent } from "@mu
 import { DataGrid } from "@mui/x-data-grid";
 import api from "../api";
 import CreateRouterDialog from "../components/CreateRouterDialog";
+import { useNavigate } from "react-router-dom";
 
 export default function RouterPage() {
     const columns = [
@@ -16,6 +17,7 @@ export default function RouterPage() {
     const [selectedIds, setSelectedIds] = useState([]);
 
     const [open, setOpen] = useState(false);
+    const navigate = useNavigate()
 
     async function fetchData() {
         await api.get('/routers')
@@ -47,7 +49,7 @@ export default function RouterPage() {
     }
 
     return <>
-        <Typography variant="h4">Flavor Page</Typography>
+        <Typography variant="h4">Router Page</Typography>
         <Box sx={{ padding: "5px 0px", width: "100%" }}>
             <Button
                 variant="contained"
@@ -69,11 +71,25 @@ export default function RouterPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                disabled={selectedIds.length === 0}
+                disabled={selectedIds.size === 0}
                 onClick={deleteData}
             >
                 Delete
             </Button>
+            <Button
+                variant="contained"
+                sx={{ marginRight: "5px" }}
+                color="primary"
+                disabled={selectedIds.size !== 1}
+                onClick={
+                    () => {
+                        console.log(Array.from(selectedIds)[0]);
+                        navigate(`/router/${Array.from(selectedIds)[0]}`)
+                    }
+                }
+            >
+                Detail
+            </Button >
         </Box >
         <Box sx={{ width: "100%", height: "600px" }}>
             <DataGrid

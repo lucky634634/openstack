@@ -8,9 +8,11 @@ import CreateRouteDialog from "../components/CreateRouteDialog";
 
 export default function RouterDetailPage() {
     const { id } = useParams();
-    const [router, setRouter] = useState(null)
+    const [router, setRouter] = useState({})
     const portColumns = [
-        { field: 'id', headerName: 'ID', flex: 1 },
+        { field: 'id', headerName: 'ID'},
+        { field: 'network_id', headerName: 'Network', flex: 1 },
+        { field: 'status', headerName: 'Status', flex: 1 },
     ]
     const [portList, setPortList] = useState([])
     const [selectedPorts, setSelectedPorts] = useState([]);
@@ -26,29 +28,39 @@ export default function RouterDetailPage() {
     const [routeOpen, setRouteOpen] = useState(false)
 
     async function fetchData() {
+        setRouteList([])
+        setPortList([])
+        let routerData = {}
+        const routes = []
+        let ports = []
         await api.get(`/routers/${id}`)
             .then(response => {
                 console.log(response);
-                setRouter(response.data);
-                let id = 0
-                for (let route in response.data.routes) {
-                    const routeData = { id: id, destination: route.destination, nexthop: route.nexthop }
-                    setRouteList([...routeList, routeData])
-                    id++
+                routerData = response.data
+                let route_id = 0
+                for (const route of routerData.routes) {
+                    const routeData = { id: route_id, destination: route.destination, nexthop: route.nexthop }
+                    routes.push(routeData)
+                    route_id++
+                    console.log(routeData)
                 }
             })
             .catch(error => {
                 console.error(error);
             })
 
-        await api.get('/ports', { router_id: router.id })
+        await api.get('/ports', { params: { router_id: id } })
             .then(response => {
                 console.log(response);
-                setPortList(response.data)
+                ports = response.data
             })
             .catch(error => {
                 console.error(error);
             })
+
+        setRouter(routerData)
+        setRouteList(routes)
+        setPortList(ports)
     }
 
     async function deleteRoutes() {
@@ -82,12 +94,16 @@ export default function RouterDetailPage() {
 
     useEffect(() => {
         fetchData()
-    })
+    }, [])
+
+    if (router.id == undefined) {
+        return <></>
+    }
 
     return <>
-        <Typography variant="h4">Router ${router.name} Detail Page</Typography>
+        <Typography variant="h4">Router {router.name} Detail Page</Typography>
         <Box>
-            <Box>
+            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                 <Button
                     variant="contained"
                     color="primary"
@@ -97,14 +113,21 @@ export default function RouterDetailPage() {
                 </Button>
             </Box>
             <Box>
-                <Box>
+                <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                     <Button
                         variant="contained"
                         color="primary"
-                        disabled={selectedPorts.length === undefined || selectedPorts.length === 0}
+                        disabled={selectedPorts.size === 0}
                         onClick={deletePorts}
                     >
                         delete
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setPortOpen(true)}
+                    >
+                        Create
                     </Button>
 
                 </Box>
@@ -116,25 +139,31 @@ export default function RouterDetailPage() {
                 />
             </Box>
             <Box>
-                <Box>
-
+                <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                     <Button
                         variant="contained"
                         color="primary"
-                        disabled={selectedRoutes.length === undefined || selectedRoutes.length === 0}
+                        disabled={selectedRoutes.length === 0}
                         onClick={deleteRoutes}
                     >
                         delete
                     </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setRouteOpen(true)}
+                    >
+                        Create
+                    </Button>
                 </Box>
                 <DataGrid
                     columns={routeColumns}
-                    rows={router.routes}
+                    rows={routeList}
                     checkboxSelection
                     onRowSelectionModelChange={(rows) => setSelectedRoutes(rows.ids)}
                 />
             </Box>
-        </Box>
+        </Box >
 
         <CreatePortDialog open={portOpen} handleClose={() => setPortOpen(false)} router={router.id} />
         <CreateRouteDialog open={routeOpen} handleClose={() => setRouteOpen(false)} router={router.id} />

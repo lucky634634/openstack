@@ -296,8 +296,10 @@ async def get_instances():
                 id=instance.id,
                 name=instance.name,
                 status=instance.status,
+                network_list=[network for network in instance.addresses.keys()],
             )
             for instance in instances
+            if instance is not None
         ]
 
     except Exception as e:
@@ -314,6 +316,7 @@ async def get_instance(instance_id: str):
             id=instance.id,
             name=instance.name,
             status=instance.status,
+            network_list=[network for network in instance.addresses.keys()],
         )
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
@@ -343,6 +346,7 @@ async def create_instance(payload: CreateVMRequest):
             id=instance.id,
             name=instance.name,
             status=instance.status,
+            network_list=[network for network in instance.addresses.keys()],
         )
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
@@ -410,7 +414,7 @@ async def get_ports(router_id: str):
         return HTTPException(status_code=500, detail=str(e))
 
 
-@app.put("/add-interface")
+@app.post("/add-interface")
 async def add_interface(payload: AddInterfaceRequest):
     try:
         router = conn.get_router(payload.router)
@@ -460,7 +464,7 @@ async def delete_router(router_id: str):
         return HTTPException(status_code=500, detail=str(e))
 
 
-@app.put("/add-route")
+@app.post("/add-route")
 async def add_route(payload: AddRouteRequest):
     try:
         router = conn.get_router(name_or_id=payload.router)

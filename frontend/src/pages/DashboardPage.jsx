@@ -110,7 +110,6 @@ function DashboardPage() {
             >
                 {dimensions.width > 0 && (
                     <ForceGraph
-                        minZoom={5}
                         graphData={{ nodes, links }}
                         width={dimensions.width}
                         height={dimensions.height}

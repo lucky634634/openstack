@@ -24,14 +24,14 @@ export default function CreateRouteDialog({ open, handleClose, router }) {
     const [nexthop, setNexthop] = useState("")
 
     async function createRoute() {
-        await api.post('/add-interface', {
+        await api.post('/add-route', {
             router: router,
             destination: destination,
             nexthop: nexthop
         })
             .then(response => {
                 console.log(response);
-                alert("VM created successfully");
+                alert("Route created successfully");
             })
             .catch(error => {
                 console.error(error);
@@ -40,6 +40,8 @@ export default function CreateRouteDialog({ open, handleClose, router }) {
     }
 
     const handleCreate = () => {
+        setDestination("")
+        setNexthop("")
         createRoute()
         handleClose()
     };

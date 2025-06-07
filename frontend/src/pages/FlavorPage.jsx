@@ -72,7 +72,7 @@ export default function FlavorPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                disabled={selectedIds.length === 0}
+                disabled={selectedIds.size === 0}
                 onClick={deleteData}
             >
                 Delete

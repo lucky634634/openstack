@@ -64,7 +64,7 @@ function NetworkPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                disabled={selectedIds.length === undefined || selectedIds.length === 0}
+                disabled={selectedIds.size === 0}
                 onClick={() => {
                     deleteData()
                     fetchData()
@@ -74,11 +74,11 @@ function NetworkPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                disabled={selectedIds.length === undefined || selectedIds.length !== 1}
+                disabled={selectedIds.size !== 1}
                 onClick={
                     () => {
-                        console.log(selectedIds.length)
-                        navigate('/network/1')
+                        console.log(Array.from(selectedIds)[0])
+                        navigate('/network/' + Array.from(selectedIds)[0])
                     }
                 }
             >Detail</Button>

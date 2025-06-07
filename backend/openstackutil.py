@@ -6,6 +6,7 @@ class Instance(BaseModel):
     id: str
     name: str
     status: str
+    network_list: List[str]
 
 
 class CreateNetworkWithSubnetRequest(BaseModel):

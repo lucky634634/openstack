@@ -7,7 +7,7 @@ import CreateSubnetDialog from "../components/CreateSubnetDialog";
 
 export default function NetworkDetailPage() {
     const { id } = useParams();
-    const [network, setNetwork] = useState(null)
+    const [network, setNetwork] = useState({})
     const subnetColumns = [
         { field: 'id', headerName: 'ID', flex: 1 },
         { field: 'name', headerName: 'Name', width: 120 },
@@ -18,11 +18,14 @@ export default function NetworkDetailPage() {
     const [open, setOpen] = useState(false);
 
     async function fetchNetwork() {
+        setSubnetList([])
+        let net = {}
+        const subnets = []
         await api.get(`/networks/${id}`)
             .then(response => {
                 console.log(response);
                 try {
-                    setNetwork(response.data);
+                    net = response.data
                 } catch (error) {
                     console.error(error);
                 }
@@ -31,12 +34,12 @@ export default function NetworkDetailPage() {
                 console.error(error);
             })
 
-        for (let subnet_id of network.subnet_ids) {
+        for (let subnet_id of net.subnet_ids) {
             await api.get(`/subnets/${subnet_id}`)
                 .then(response => {
                     console.log(response);
                     try {
-                        setSubnetList([...subnetList, response.data])
+                        subnets.push(response.data)
                     } catch (error) {
                         console.error(error);
                     }
@@ -45,6 +48,9 @@ export default function NetworkDetailPage() {
                     console.error(error);
                 })
         }
+
+        setNetwork(net)
+        setSubnetList(subnets)
     }
 
     async function deleteSubnets() {
@@ -64,12 +70,12 @@ export default function NetworkDetailPage() {
 
     useEffect(() => {
         fetchNetwork();
-    });
+    }, []);
 
     return <>
         <Typography variant="h4">Network {network.name}</Typography>
-        <Box>
-            <Box>
+        <Box sx={{ height: 400, width: '100%' }}>
+            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                 <Button
                     variant="contained"
                     onClick={() => fetchNetwork()}
@@ -78,7 +84,7 @@ export default function NetworkDetailPage() {
                 </Button>
                 <Button
                     variant="contained"
-                    disabled={selectedIds.length === undefined || selectedIds.length === 0}
+                    disabled={selectedIds.size === 0}
                     onClick={() => deleteSubnets()}
                 >
                     Delete
