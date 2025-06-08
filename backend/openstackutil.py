@@ -73,3 +73,20 @@ class DeleteRouteRequest(BaseModel):
     router: str
     destination: str
     nexthop: str
+
+
+class CreateSecurityGroupRequest(BaseModel):
+    name: str
+    description: str
+
+
+class CreateSecurityGroupRuleRequest(BaseModel):
+    security_group: str
+    direction: str
+    protocol: str
+    port_range_min: Optional[int] = None
+    port_range_max: Optional[int] = None
+    description: Optional[str] = None
+    remote_ip_prefix: Optional[str] = None
+    remote_group_id: Optional[str] = None
+    ethertype: str = "IPv4"

@@ -1,5 +1,6 @@
 from re import S
 from typing import Optional
+from unittest import result
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -7,6 +8,8 @@ import uvicorn
 import openstack
 from openstack.compute.v2.server import Server
 from openstack.network.v2.router import Router
+from openstack.network.v2.network import Network
+from openstack.network.v2.security_group import SecurityGroup
 import sys
 from dotenv import load_dotenv
 import os
@@ -434,9 +437,16 @@ async def remove_interface(
 ):
     try:
         router = conn.get_router(router_id)
-        conn.remove_router_interface(
+        result = conn.remove_router_interface(
             router=router, subnet_id=subnet_id, port_id=port_id
         )
+
+        if result is None:
+            return {"message": "Interface removed successfully"}
+        else:
+            return HTTPException(
+                status_code=500, detail=str("Interface removal failed")
+            )
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -458,8 +468,7 @@ async def delete_router(router_id: str):
         result = conn.delete_router(router_id)
         if result:
             return {"message": "Router deleted successfully"}
-        else:
-            return HTTPException(status_code=500, detail=str("Router deletion failed"))
+        return HTTPException(status_code=500, detail=str("Router deletion failed"))
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -473,7 +482,12 @@ async def add_route(payload: AddRouteRequest):
             return HTTPException(status_code=404, detail="Router not found")
         routes = router.routes
         routes.append({"destination": payload.destination, "nexthop": payload.nexthop})
-        return conn.update_router(name_or_id=router.id, routes=routes)
+        result = conn.update_router(name_or_id=router.id, routes=routes)
+        if result is None:
+            return HTTPException(status_code=500, detail=str("Route addition failed"))
+        if result.routes == routes:
+            return {"message": "Route added successfully"}
+        return HTTPException(status_code=500, detail=str("Route addition failed"))
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
@@ -490,8 +504,110 @@ async def delete_route(payload: DeleteRouteRequest):
             if route["destination"] != payload.destination
             or route["nexthop"] != payload.nexthop
         ]
-        print(routes)
-        return conn.update_router(name_or_id=router.id, routes=routes)
+        result = conn.update_router(name_or_id=router.id, routes=routes)
+        if result is None:
+            return HTTPException(status_code=500, detail=str("Route deletion failed"))
+        if result.routes == routes:
+            return {"message": "Route deleted successfully"}
+        return HTTPException(status_code=500, detail=str("Route deletion failed"))
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/security-groups")
+async def get_security_groups():
+    try:
+        security_groups = conn.list_security_groups()
+        return [security_group for security_group in security_groups]
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/security-group/${security_group_id}")
+async def get_security_group(security_group_id: str):
+    try:
+        security_group = conn.get_security_group(security_group_id)
+        if security_group is None:
+            return HTTPException(status_code=404, detail="Security group not found")
+        return security_group
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/create-security-group")
+async def create_security_group(payload: CreateSecurityGroupRequest):
+    try:
+        security_group = conn.create_security_group(
+            name=payload.name, description=payload.description
+        )
+        return security_group
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/delete-security-group")
+async def delete_security_group(security_group_id: str):
+    try:
+        security_group = conn.get_security_group(security_group_id)
+        if security_group is None:
+            return HTTPException(status_code=404, detail="Security group not found")
+        result = conn.delete_security_group(security_group_id)
+        if result:
+            return {"message": "Security group deleted successfully"}
+        return HTTPException(
+            status_code=500, detail=str("Security group deletion failed")
+        )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/create-security-rule")
+async def create_security_rule(payload: CreateSecurityGroupRuleRequest):
+    try:
+        security_group = conn.get_security_group(payload.security_group)
+        if security_group is None:
+            return HTTPException(status_code=404, detail="Security group not found")
+        result = conn.create_security_group_rule(
+            secgroup_name_or_id=security_group.id,  # type: ignore
+            direction=payload.direction,
+            protocol=payload.protocol,
+            port_range_min=payload.port_range_min,
+            port_range_max=payload.port_range_max,
+            description=payload.description,
+            remote_ip_prefix=payload.remote_ip_prefix,
+            remote_group_id=payload.remote_group_id,
+            ethertype=payload.ethertype,
+        )
+        if result:
+            return {"message": "Security rule created successfully"}
+        return HTTPException(
+            status_code=500, detail=str("Security rule creation failed")
+        )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/delete-security-rule")
+async def delete_security_rule(security_rule_id: str):
+    try:
+        result = conn.delete_security_group_rule(rule_id=security_rule_id)
+        if result:
+            return {"message": "Security rule deleted successfully"}
+        return HTTPException(
+            status_code=500, detail=str("Security rule deletion failed")
+        )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/security-rules")
+async def get_security_rules(security_group: str):
+    try:
+        security_group = conn.get_security_group(name_or_id=security_group)  # type: ignore
+        if security_group is None:
+            return HTTPException(status_code=404, detail="Security group not found")
+        return security_group.security_group_rules  # type: ignore
+
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 

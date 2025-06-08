@@ -3,6 +3,7 @@
         "dotenv",
         "nexthop",
         "openstackutil",
+        "snat",
         "vcpus"
     ]
 }

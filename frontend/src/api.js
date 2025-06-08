@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const host = import.meta.env.VITE_API_HOST
+let host = import.meta.env.VITE_API_HOST
+if (host === undefined) {
+    host = "http://localhost:8080"
+}
 
 const api = axios.create({
     baseURL: host,
