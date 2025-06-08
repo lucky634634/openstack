@@ -603,10 +603,10 @@ async def delete_security_rule(security_rule_id: str):
 @app.get("/security-rules")
 async def get_security_rules(security_group: str):
     try:
-        security_group = conn.get_security_group(name_or_id=security_group)  # type: ignore
-        if security_group is None:
+        secgroup = conn.get_security_group(name_or_id=security_group)
+        if secgroup is None:
             return HTTPException(status_code=404, detail="Security group not found")
-        return security_group.security_group_rules  # type: ignore
+        return secgroup.security_group_rules
 
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))

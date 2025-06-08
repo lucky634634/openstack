@@ -11,6 +11,7 @@ import FlavorPage from "./pages/FlavorPage";
 import RouterPage from "./pages/RouterPage";
 import NetworkDetailPage from "./pages/NetworkDetailPage";
 import RouterDetailPage from "./pages/RouterDetailPage";
+import SecurityGroupPage from "./pages/SecurityGroupPage";
 
 function App() {
   return (
@@ -30,6 +31,8 @@ function App() {
             <Route path="/router" element={<RouterPage />} />
             <Route path="/network/:id" element={<NetworkDetailPage />} />
             <Route path="/router/:id" element={<RouterDetailPage />} />
+            <Route path="/security-group" element={<SecurityGroupPage />} />
+            {/* <Route path="/security-group/:id" element={<SecurityGroupPage />} /> */}
           </Routes>
         </Box>
       </Box>

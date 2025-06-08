@@ -22,6 +22,7 @@ const navItems = [
     { text: "VM", icon: <ComputerIcon />, path: "/vm" },
     { text: "Flavor", icon: <ComputerIcon />, path: "/flavor" },
     { text: "Router", icon: <ComputerIcon />, path: "/router" },
+    { text: "Security Group", icon: <ComputerIcon />, path: "/security-group" },
 ];
 
 function Sidebar() {

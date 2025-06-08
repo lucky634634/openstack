@@ -1,8 +1,10 @@
 {
     "cSpell.words": [
         "dotenv",
+        "ethertype",
         "nexthop",
         "openstackutil",
+        "secgroup",
         "snat",
         "vcpus"
     ]

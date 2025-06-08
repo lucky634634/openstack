@@ -30,7 +30,7 @@ export default function CreatePortDialog({ open, handleClose, router }) {
         })
             .then(response => {
                 console.log(response);
-                alert("VM created successfully");
+                alert("Port created successfully");
             })
             .catch(error => {
                 console.error(error);
