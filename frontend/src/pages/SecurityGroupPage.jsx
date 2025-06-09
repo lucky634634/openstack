@@ -83,6 +83,7 @@ export default function SecurityGroupPage() {
                 onClick={
                     () => {
                         console.log(Array.from(selectedIds)[0]);
+                        navigate(`/security-group/${Array.from(selectedIds)[0]}`)
                     }
                 }
             >

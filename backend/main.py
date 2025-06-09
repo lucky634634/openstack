@@ -56,7 +56,7 @@ async def get_networks():
         networks = conn.list_networks()
         return [net for net in networks]
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/networks/{network_id}")
@@ -65,7 +65,7 @@ async def get_network(network_id: str):
         network = conn.get_network(network_id)
         return network
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/create-network")
@@ -96,11 +96,11 @@ async def create_network(
         )
 
         if network is None:
-            return HTTPException(status_code=500, detail="Create network failed")
+            raise HTTPException(status_code=500, detail="Create network failed")
 
         return network
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/create-network-with-subnet")
@@ -139,7 +139,7 @@ async def create_network_with_subnet(payload: CreateNetworkWithSubnetRequest):
         return network
 
     except Exception as e:
-        return JSONResponse(status_code=400, content={"error": str(e)})
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/delete-network")
@@ -149,9 +149,9 @@ async def delete_network(network: str):
         if result:
             return {"message": "Network deleted successfully"}
         else:
-            return HTTPException(status_code=500, detail=str("Deleted network failed"))
+            raise HTTPException(status_code=500, detail=str("Deleted network failed"))
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/subnets/")
@@ -160,7 +160,7 @@ async def get_subnets():
         subnets = conn.list_subnets()
         return [subnet for subnet in subnets]
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/subnets/{subnet_id}")
@@ -168,10 +168,10 @@ async def get_subnet(subnet_id: str):
     try:
         subnet = conn.get_subnet(subnet_id)
         if subnet is None:
-            return HTTPException(status_code=500, detail=str("Subnet not found"))
+            raise HTTPException(status_code=500, detail=str("Subnet not found"))
         return subnet
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/create-subnet")
@@ -375,7 +375,7 @@ async def get_routers():
         routers = conn.list_routers()
         return [router for router in routers]
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/routers/{router_id}")
@@ -383,10 +383,10 @@ async def get_router(router_id: str):
     try:
         router = conn.get_router(router_id)
         if router is None:
-            return HTTPException(status_code=500, detail="Router not found")
+            raise HTTPException(status_code=500, detail="Router not found")
         return router
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/create-router")
@@ -394,15 +394,15 @@ async def create_router(payload: CreateRouterRequest):
     try:
         external_net = conn.get_network(payload.external_network)
         if external_net is None:
-            return HTTPException(status_code=404, detail="External network not found")
+            raise HTTPException(status_code=404, detail="External network not found")
         router = conn.create_router(
             name=payload.name, ext_gateway_net_id=external_net.id, enable_snat=True
         )
         if router is None:
-            return HTTPException(status_code=500, detail="Create router failed")
+            raise HTTPException(status_code=500, detail="Create router failed")
         return router
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/ports")
@@ -410,11 +410,11 @@ async def get_ports(router_id: str):
     try:
         router = conn.get_router(name_or_id=router_id)
         if router is None:
-            return HTTPException(status_code=404, detail="Router not found")
+            raise HTTPException(status_code=404, detail="Router not found")
         ports = conn.list_router_interfaces(router=router)
         return ports
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/add-interface")
@@ -422,13 +422,13 @@ async def add_interface(payload: AddInterfaceRequest):
     try:
         router = conn.get_router(payload.router)
         if router is None:
-            return HTTPException(status_code=404, detail="Router not found")
+            raise HTTPException(status_code=404, detail="Router not found")
         subnet = conn.get_subnet(payload.subnet)
         if subnet is None:
-            return HTTPException(status_code=404, detail="Subnet not found")
+            raise HTTPException(status_code=404, detail="Subnet not found")
         return conn.add_router_interface(router, subnet.id)
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/remove-interface")
@@ -444,11 +444,9 @@ async def remove_interface(
         if result is None:
             return {"message": "Interface removed successfully"}
         else:
-            return HTTPException(
-                status_code=500, detail=str("Interface removal failed")
-            )
+            raise HTTPException(status_code=500, detail=str("Interface removal failed"))
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/delete-router")
@@ -468,9 +466,9 @@ async def delete_router(router_id: str):
         result = conn.delete_router(router_id)
         if result:
             return {"message": "Router deleted successfully"}
-        return HTTPException(status_code=500, detail=str("Router deletion failed"))
+        raise HTTPException(status_code=500, detail=str("Router deletion failed"))
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/add-route")
@@ -479,17 +477,17 @@ async def add_route(payload: AddRouteRequest):
         router = conn.get_router(name_or_id=payload.router)
         print(type(router))
         if router is None:
-            return HTTPException(status_code=404, detail="Router not found")
+            raise HTTPException(status_code=404, detail="Router not found")
         routes = router.routes
         routes.append({"destination": payload.destination, "nexthop": payload.nexthop})
         result = conn.update_router(name_or_id=router.id, routes=routes)
         if result is None:
-            return HTTPException(status_code=500, detail=str("Route addition failed"))
+            raise HTTPException(status_code=500, detail=str("Route addition failed"))
         if result.routes == routes:
             return {"message": "Route added successfully"}
-        return HTTPException(status_code=500, detail=str("Route addition failed"))
+        raise HTTPException(status_code=500, detail=str("Route addition failed"))
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/delete-route")
@@ -497,7 +495,7 @@ async def delete_route(payload: DeleteRouteRequest):
     try:
         router = conn.get_router(name_or_id=payload.router)
         if router is None:
-            return HTTPException(status_code=404, detail="Router not found")
+            raise HTTPException(status_code=404, detail="Router not found")
         routes = [
             route
             for route in router.routes
@@ -506,12 +504,12 @@ async def delete_route(payload: DeleteRouteRequest):
         ]
         result = conn.update_router(name_or_id=router.id, routes=routes)
         if result is None:
-            return HTTPException(status_code=500, detail=str("Route deletion failed"))
+            raise HTTPException(status_code=500, detail=str("Route deletion failed"))
         if result.routes == routes:
             return {"message": "Route deleted successfully"}
-        return HTTPException(status_code=500, detail=str("Route deletion failed"))
+        raise HTTPException(status_code=500, detail=str("Route deletion failed"))
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/security-groups")
@@ -520,18 +518,18 @@ async def get_security_groups():
         security_groups = conn.list_security_groups()
         return [security_group for security_group in security_groups]
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/security-group/${security_group_id}")
+@app.get("/security-groups/${security_group_id}")
 async def get_security_group(security_group_id: str):
     try:
         security_group = conn.get_security_group(security_group_id)
         if security_group is None:
-            return HTTPException(status_code=404, detail="Security group not found")
+            raise HTTPException(status_code=404, detail="Security group not found")
         return security_group
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/create-security-group")
@@ -542,7 +540,7 @@ async def create_security_group(payload: CreateSecurityGroupRequest):
         )
         return security_group
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/delete-security-group")
@@ -550,15 +548,15 @@ async def delete_security_group(security_group_id: str):
     try:
         security_group = conn.get_security_group(security_group_id)
         if security_group is None:
-            return HTTPException(status_code=404, detail="Security group not found")
+            raise HTTPException(status_code=404, detail="Security group not found")
         result = conn.delete_security_group(security_group_id)
         if result:
             return {"message": "Security group deleted successfully"}
-        return HTTPException(
+        raise HTTPException(
             status_code=500, detail=str("Security group deletion failed")
         )
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/create-security-rule")
@@ -580,11 +578,11 @@ async def create_security_rule(payload: CreateSecurityGroupRuleRequest):
         )
         if result:
             return {"message": "Security rule created successfully"}
-        return HTTPException(
+        raise HTTPException(
             status_code=500, detail=str("Security rule creation failed")
         )
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/delete-security-rule")
@@ -609,7 +607,7 @@ async def get_security_rules(security_group: str):
         return secgroup.security_group_rules
 
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

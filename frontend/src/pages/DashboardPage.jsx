@@ -4,6 +4,7 @@ import ForceGraph from "react-force-graph-2d";
 import api from "../api.js";
 import cloudSvg from "../assets/cloud.svg";
 import pcSvg from "../assets/pc.svg";
+import routerSvg from "../assets/router.svg"
 
 function DashboardPage() {
     const [nodes, setNodes] = useState([])
@@ -18,7 +19,7 @@ function DashboardPage() {
         setLinks([])
         const networkNodes = []
         const networkLink = []
-        await api.get('networks')
+        await api.get('/networks')
             .then(res => {
                 console.log(res.data)
                 const networks = res.data;
@@ -35,7 +36,7 @@ function DashboardPage() {
                 console.error(err)
             })
         const instanceNodes = []
-        await api.get('instances')
+        await api.get('/instances')
             .then(res => {
                 console.log(res.data)
                 const instances = res.data;
@@ -62,10 +63,44 @@ function DashboardPage() {
                 console.error(err)
             })
 
-        setNodes(networkNodes.concat(instanceNodes))
+        const routerNodes = []
+        await api.get('/routers')
+            .then(res => {
+                console.log(res.data)
+                for (const router of res.data) {
+                    const node = {
+                        id: router.id,
+                        label: router.name,
+                        type: 'router'
+                    }
+                    routerNodes.push(node)
+                }
+            })
+            .catch(err => {
+                console.error(err)
+            })
+
+        for (const router of routerNodes) {
+            await api.get("/ports", { params: { router_id: router.id } })
+                .then(res => {
+                    console.log(res.data)
+                    for (const port of res.data) {
+                        let netSource = networkNodes.find(n => n.id === port.network_id)
+                        if (netSource) {
+                            const link = {
+                                source: netSource.id,
+                                target: router.id,
+                            }
+                            networkLink.push(link)
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error(err)
+                })
+        }
+        setNodes(networkNodes.concat(instanceNodes).concat(routerNodes))
         setLinks(networkLink)
-        console.log(networkNodes.concat(instanceNodes))
-        console.log(networkLink)
     }
 
     useEffect(() => {
@@ -115,7 +150,7 @@ function DashboardPage() {
                         height={dimensions.height}
                         nodeLabel="label"
                         nodeAutoColorBy={"type"}
-                        backgroundColor="#fff"
+                        backgroundColor="#eee"
                         linkColor={() => "#000"}
                         linkWidth={2}
                         nodeCanvasObject={(node, ctx, globalScale) => {
@@ -128,6 +163,11 @@ function DashboardPage() {
                             else if (node.type == 'vm') {
                                 const image = new Image()
                                 image.src = pcSvg;
+                                ctx.drawImage(image, node.x - size / 2, node.y - size / 2, size, size);
+                            }
+                            else if (node.type == 'router') {
+                                const image = new Image()
+                                image.src = routerSvg;
                                 ctx.drawImage(image, node.x - size / 2, node.y - size / 2, size, size);
                             }
 
