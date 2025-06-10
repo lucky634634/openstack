@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, Typography, Dialog, DialogTitle, DialogContent } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import api from "../api";
-import CreateRouterDialog from "../components/CreateRouterDialog";
 import { useNavigate } from "react-router-dom";
 import CreateSecurityGroupDialog from "../components/CreateSecurityGroupDialog";
 
@@ -46,6 +45,10 @@ export default function SecurityGroupPage() {
         }
         await fetchData()
     }
+
+    useEffect(() => {
+        fetchData()
+    }, [])
 
     return <>
         <Typography variant="h4">Security Group Page</Typography>

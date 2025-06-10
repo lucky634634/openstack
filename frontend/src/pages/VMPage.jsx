@@ -47,6 +47,8 @@ export default function VMPage() {
         await fetchData()
     }
 
+    React.useEffect(() => { fetchData() }, [])
+
     return <>
         <Typography variant="h4">VM Page</Typography>
         <Box sx={{ padding: "5px 0px", width: "100%" }}>

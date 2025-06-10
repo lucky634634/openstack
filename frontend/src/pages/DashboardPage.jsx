@@ -104,6 +104,7 @@ function DashboardPage() {
     }
 
     useEffect(() => {
+
         const observer = new ResizeObserver(([entry]) => {
             const { width, height } = entry.contentRect;
             setDimensions({ width, height });
@@ -112,6 +113,8 @@ function DashboardPage() {
         if (containerRef.current) {
             observer.observe(containerRef.current);
         }
+
+        fetchData()
 
         return () => observer.disconnect();
     }, []);

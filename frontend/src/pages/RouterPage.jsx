@@ -48,6 +48,8 @@ export default function RouterPage() {
         await fetchData()
     }
 
+    useState(() => { fetchData() }, [])
+
     return <>
         <Typography variant="h4">Router Page</Typography>
         <Box sx={{ padding: "5px 0px", width: "100%" }}>

@@ -46,6 +46,8 @@ function NetworkPage() {
         await fetchData()
     }
 
+    useState(() => { fetchData() }, [])
+
     return <>
         <Typography variant="h4">Network Page</Typography>
         <Box sx={{ padding: "5px 0px", width: "100%" }}>

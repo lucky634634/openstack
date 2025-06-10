@@ -2,4 +2,5 @@ openstacksdk
 fastapi[standard]
 uvicorn
 pydantic
+slowapi
 python-dotenv

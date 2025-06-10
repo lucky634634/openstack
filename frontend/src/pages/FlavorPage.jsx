@@ -49,6 +49,8 @@ export default function FlavorPage() {
         await fetchData()
     }
 
+    React.useEffect(() => { fetchData() }, [])
+
     return <>
         <Typography variant="h4">Flavor Page</Typography>
         <Box sx={{ padding: "5px 0px", width: "100%" }}>
