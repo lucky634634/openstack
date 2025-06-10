@@ -1,39 +1,41 @@
-from re import S
 from typing import Optional
-from unittest import result
-from fastapi import FastAPI, Query, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 import uvicorn
 import openstack
-from openstack.compute.v2.server import Server
-from openstack.network.v2.router import Router
-from openstack.network.v2.network import Network
-from openstack.network.v2.security_group import SecurityGroup
-import sys
 from dotenv import load_dotenv
 import os
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from openstackutil import *
 
 # fastapi
 app = FastAPI(debug=True)
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+app.state.limiter = limiter
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
+app.add_middleware(SlowAPIMiddleware)
 
 # openstack
 openstack.enable_logging(debug=True, path="openstack.log", format_stream=True)
 
-conn = openstack.connect(cloud="local")
+# conn = openstack.connect(cloud="local")
 
 load_dotenv()
 
+def get_openstack_connection():
+    return openstack.connect(cloud="local")
 
 @app.get("/")
 @app.get("/health")
@@ -44,6 +46,7 @@ async def health():
 @app.get("/networks/")
 async def get_networks():
     try:
+        conn = get_openstack_connection()
         networks = conn.list_networks()
         return [net for net in networks]
     except Exception as e:
@@ -53,6 +56,7 @@ async def get_networks():
 @app.get("/networks/{network_id}")
 async def get_network(network_id: str):
     try:
+        conn = get_openstack_connection()
         network = conn.get_network(network_id)
         return network
     except Exception as e:
@@ -78,6 +82,7 @@ async def create_network(
         if provider_segmentation_id:
             provider["segmentation_id"] = provider_segmentation_id
 
+        conn = get_openstack_connection()
         network = conn.create_network(
             name=name,
             shared=shared,
@@ -105,6 +110,7 @@ async def create_network_with_subnet(payload: CreateNetworkWithSubnetRequest):
         if payload.provider_segmentation_id:
             provider["segmentation_id"] = payload.provider_segmentation_id
 
+        conn = get_openstack_connection()
         network = conn.create_network(
             name=payload.name,
             admin_state_up=payload.admin_state_up,
@@ -136,6 +142,7 @@ async def create_network_with_subnet(payload: CreateNetworkWithSubnetRequest):
 @app.delete("/delete-network")
 async def delete_network(network: str):
     try:
+        conn = get_openstack_connection()
         result = conn.delete_network(network)
         if result:
             return {"message": "Network deleted successfully"}
@@ -148,6 +155,7 @@ async def delete_network(network: str):
 @app.get("/subnets/")
 async def get_subnets():
     try:
+        conn = get_openstack_connection()
         subnets = conn.list_subnets()
         return [subnet for subnet in subnets]
     except Exception as e:
@@ -157,6 +165,7 @@ async def get_subnets():
 @app.get("/subnets/{subnet_id}")
 async def get_subnet(subnet_id: str):
     try:
+        conn = get_openstack_connection()
         subnet = conn.get_subnet(subnet_id)
         if subnet is None:
             raise HTTPException(status_code=500, detail=str("Subnet not found"))
@@ -170,6 +179,7 @@ async def create_subnet(payload: CreateSubnetRequest):
     try:
         if "/" not in payload.cidr:
             cidr = f"{payload.cidr}/24"
+        conn = get_openstack_connection()
         subnet = conn.create_subnet(
             network_name_or_id=payload.network,
             name=payload.subnet_name,
@@ -192,6 +202,7 @@ async def update_subnet(
     gateway_ip: Optional[str] = None,
 ):
     try:
+        conn = get_openstack_connection()
         result = conn.update_subnet(
             name_or_id=subnet,
             disable_gateway_ip=disable_gateway_ip,
@@ -208,6 +219,7 @@ async def update_subnet(
 @app.put("/delete-subnet")
 async def delete_subnet(subnet: str):
     try:
+        conn = get_openstack_connection()
         result = conn.delete_subnet(subnet)
         if result:
             return {"message": "Subnet deleted successfully"}
@@ -220,6 +232,7 @@ async def delete_subnet(subnet: str):
 @app.get("/flavors/")
 async def get_flavors():
     try:
+        conn = get_openstack_connection()
         flavors = conn.list_flavors()
         return [flavor for flavor in flavors]
     except Exception as e:
@@ -229,6 +242,7 @@ async def get_flavors():
 @app.get("/flavors/{flavor_id}")
 async def get_flavor(flavor_id: str):
     try:
+        conn = get_openstack_connection()
         flavor = conn.get_flavor(flavor_id)
         if flavor is None:
             return HTTPException(status_code=500, detail=str("Flavor not found"))
@@ -240,6 +254,7 @@ async def get_flavor(flavor_id: str):
 @app.post("/create-flavors")
 async def create_flavors(payload: CreateFlavorRequest):
     try:
+        conn = get_openstack_connection()
         flavor = conn.create_flavor(
             name=payload.name,
             ram=payload.ram,
@@ -258,6 +273,7 @@ async def create_flavors(payload: CreateFlavorRequest):
 @app.delete("/delete-flavor")
 async def delete_flavor(flavor: str):
     try:
+        conn = get_openstack_connection()
         result = conn.delete_flavor(flavor)
         if result:
             return {"message": "Flavor deleted successfully"}
@@ -269,12 +285,14 @@ async def delete_flavor(flavor: str):
 
 @app.get("/images")
 async def get_images():
+    conn = get_openstack_connection()
     images = conn.list_images()
     return [image for image in images]
 
 
 @app.get("/images/{image_name}")
 async def get_image(image_name: str):
+    conn = get_openstack_connection()
     image = conn.get_image(image_name)
     if image is None:
         return {"error": "Image not found"}
@@ -284,6 +302,7 @@ async def get_image(image_name: str):
 @app.get("/instances")
 async def get_instances():
     try:
+        conn = get_openstack_connection()
         instances = conn.list_servers()
         return [
             Instance(
@@ -303,6 +322,7 @@ async def get_instances():
 @app.get("/instances/{instance_id}")
 async def get_instance(instance_id: str):
     try:
+        conn = get_openstack_connection()
         instance = conn.get_server(instance_id)
         if instance is None:
             return HTTPException(status_code=500, detail="Cannot find the instance")
@@ -327,6 +347,7 @@ async def create_instance(payload: CreateVMRequest):
         if user_data == "":
             with open("userdata.txt", "r") as f:
                 user_data = f.read()
+        conn = get_openstack_connection()
         instance = conn.create_server(
             name=payload.name,
             image=payload.image,
@@ -349,6 +370,7 @@ async def create_instance(payload: CreateVMRequest):
 @app.delete("/delete-instance")
 async def delete_instance(instance: str):
     try:
+        conn = get_openstack_connection()
         result = conn.delete_server(name_or_id=instance, wait=True, delete_ips=True)
         if result:
             return {"message": "Instance deleted successfully"}
@@ -363,6 +385,7 @@ async def delete_instance(instance: str):
 @app.get("/routers")
 async def get_routers():
     try:
+        conn = get_openstack_connection()
         routers = conn.list_routers()
         return [router for router in routers]
     except Exception as e:
@@ -372,6 +395,7 @@ async def get_routers():
 @app.get("/routers/{router_id}")
 async def get_router(router_id: str):
     try:
+        conn = get_openstack_connection()
         router = conn.get_router(router_id)
         if router is None:
             raise HTTPException(status_code=500, detail="Router not found")
@@ -383,6 +407,7 @@ async def get_router(router_id: str):
 @app.post("/create-router")
 async def create_router(payload: CreateRouterRequest):
     try:
+        conn = get_openstack_connection()
         external_net = conn.get_network(payload.external_network)
         if external_net is None:
             raise HTTPException(status_code=404, detail="External network not found")
@@ -399,6 +424,7 @@ async def create_router(payload: CreateRouterRequest):
 @app.get("/ports")
 async def get_ports(router_id: str):
     try:
+        conn = get_openstack_connection()
         router = conn.get_router(name_or_id=router_id)
         if router is None:
             raise HTTPException(status_code=404, detail="Router not found")
@@ -411,6 +437,7 @@ async def get_ports(router_id: str):
 @app.post("/add-interface")
 async def add_interface(payload: AddInterfaceRequest):
     try:
+        conn = get_openstack_connection()
         router = conn.get_router(payload.router)
         if router is None:
             raise HTTPException(status_code=404, detail="Router not found")
@@ -427,6 +454,7 @@ async def remove_interface(
     router_id: str, subnet_id: Optional[str] = None, port_id: Optional[str] = None
 ):
     try:
+        conn = get_openstack_connection()
         router = conn.get_router(router_id)
         result = conn.remove_router_interface(
             router=router, subnet_id=subnet_id, port_id=port_id
@@ -443,6 +471,7 @@ async def remove_interface(
 @app.delete("/delete-router")
 async def delete_router(router_id: str):
     try:
+        conn = get_openstack_connection()
         router = conn.get_router(router_id)
         if router.external_gateway_info:
             conn.update_router(router.id, ext_gateway_net_id=None)
@@ -465,6 +494,7 @@ async def delete_router(router_id: str):
 @app.post("/add-route")
 async def add_route(payload: AddRouteRequest):
     try:
+        conn = get_openstack_connection()
         router = conn.get_router(name_or_id=payload.router)
         print(type(router))
         if router is None:
@@ -484,6 +514,7 @@ async def add_route(payload: AddRouteRequest):
 @app.delete("/delete-route")
 async def delete_route(payload: DeleteRouteRequest):
     try:
+        conn = get_openstack_connection()
         router = conn.get_router(name_or_id=payload.router)
         if router is None:
             raise HTTPException(status_code=404, detail="Router not found")
@@ -506,6 +537,7 @@ async def delete_route(payload: DeleteRouteRequest):
 @app.get("/security-groups")
 async def get_security_groups():
     try:
+        conn = get_openstack_connection()
         security_groups = conn.list_security_groups()
         return [security_group for security_group in security_groups]
     except Exception as e:
@@ -515,6 +547,7 @@ async def get_security_groups():
 @app.get("/security-groups/${security_group_id}")
 async def get_security_group(security_group_id: str):
     try:
+        conn = get_openstack_connection()
         security_group = conn.get_security_group(security_group_id)
         if security_group is None:
             raise HTTPException(status_code=404, detail="Security group not found")
@@ -526,6 +559,7 @@ async def get_security_group(security_group_id: str):
 @app.post("/create-security-group")
 async def create_security_group(payload: CreateSecurityGroupRequest):
     try:
+        conn = get_openstack_connection()
         security_group = conn.create_security_group(
             name=payload.name, description=payload.description
         )
@@ -537,6 +571,7 @@ async def create_security_group(payload: CreateSecurityGroupRequest):
 @app.delete("/delete-security-group")
 async def delete_security_group(security_group_id: str):
     try:
+        conn = get_openstack_connection()
         security_group = conn.get_security_group(security_group_id)
         if security_group is None:
             raise HTTPException(status_code=404, detail="Security group not found")
@@ -553,6 +588,7 @@ async def delete_security_group(security_group_id: str):
 @app.post("/create-security-rule")
 async def create_security_rule(payload: CreateSecurityGroupRuleRequest):
     try:
+        conn = get_openstack_connection()
         security_group = conn.get_security_group(payload.security_group)
         if security_group is None:
             return HTTPException(status_code=404, detail="Security group not found")
@@ -579,6 +615,7 @@ async def create_security_rule(payload: CreateSecurityGroupRuleRequest):
 @app.delete("/delete-security-rule")
 async def delete_security_rule(security_rule_id: str):
     try:
+        conn = get_openstack_connection()
         result = conn.delete_security_group_rule(rule_id=security_rule_id)
         if result:
             return {"message": "Security rule deleted successfully"}
@@ -592,10 +629,11 @@ async def delete_security_rule(security_rule_id: str):
 @app.get("/security-rules")
 async def get_security_rules(security_group: str):
     try:
+        conn = get_openstack_connection()
         secgroup = conn.get_security_group(name_or_id=security_group)
         if secgroup is None:
             return HTTPException(status_code=404, detail="Security group not found")
-        return secgroup.security_group_rules
+        return secgroup.security_group_rules # type: ignore
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
