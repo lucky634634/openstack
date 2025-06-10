@@ -41,15 +41,6 @@ async def health():
     return {"status": "OK"}
 
 
-# @app.get("/test")
-# async def test():
-#     instances = conn.get_server()
-#     if instances is None:
-#         return {"error": "No instances found"}
-#     if len(instances) == 0:
-#         return []
-
-
 @app.get("/networks/")
 async def get_networks():
     try:
