@@ -1,13 +1,11 @@
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
 import uvicorn
 import openstack
 from dotenv import load_dotenv
 import os
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from openstackutil import *
@@ -34,17 +32,28 @@ openstack.enable_logging(debug=True, path="openstack.log", format_stream=True)
 
 load_dotenv()
 
+
 def get_openstack_connection():
     return openstack.connect(cloud="local")
 
+
 @app.get("/")
 @app.get("/health")
-async def health():
+@limiter.limit("100/minute")
+async def health(request: Request):
     return {"status": "OK"}
 
 
+@app.get("/test/{id}")
+@limiter.limit("100/minute")
+async def test(request: Request, id: str):
+    print(request)
+    return {"id": id}
+
+
 @app.get("/networks/")
-async def get_networks():
+@limiter.limit("100/minute")
+async def get_networks(request: Request):
     try:
         conn = get_openstack_connection()
         networks = conn.list_networks()
@@ -54,7 +63,8 @@ async def get_networks():
 
 
 @app.get("/networks/{network_id}")
-async def get_network(network_id: str):
+@limiter.limit("100/minute")
+async def get_network(request: Request, network_id: str):
     try:
         conn = get_openstack_connection()
         network = conn.get_network(network_id)
@@ -64,7 +74,9 @@ async def get_network(network_id: str):
 
 
 @app.post("/create-network")
+@limiter.limit("100/minute")
 async def create_network(
+    request: Request,
     name: str,
     shared: bool = False,
     external: bool = True,
@@ -100,7 +112,10 @@ async def create_network(
 
 
 @app.post("/create-network-with-subnet")
-async def create_network_with_subnet(payload: CreateNetworkWithSubnetRequest):
+@limiter.limit("100/minute")
+async def create_network_with_subnet(
+    request: Request, payload: CreateNetworkWithSubnetRequest
+):
     try:
         provider = {}
         if payload.provider_network_type:
@@ -140,7 +155,8 @@ async def create_network_with_subnet(payload: CreateNetworkWithSubnetRequest):
 
 
 @app.delete("/delete-network")
-async def delete_network(network: str):
+@limiter.limit("100/minute")
+async def delete_network(request: Request, network: str):
     try:
         conn = get_openstack_connection()
         result = conn.delete_network(network)
@@ -153,7 +169,8 @@ async def delete_network(network: str):
 
 
 @app.get("/subnets/")
-async def get_subnets():
+@limiter.limit("100/minute")
+async def get_subnets(request: Request):
     try:
         conn = get_openstack_connection()
         subnets = conn.list_subnets()
@@ -163,7 +180,8 @@ async def get_subnets():
 
 
 @app.get("/subnets/{subnet_id}")
-async def get_subnet(subnet_id: str):
+@limiter.limit("100/minute")
+async def get_subnet(request: Request, subnet_id: str):
     try:
         conn = get_openstack_connection()
         subnet = conn.get_subnet(subnet_id)
@@ -175,7 +193,8 @@ async def get_subnet(subnet_id: str):
 
 
 @app.post("/create-subnet")
-async def create_subnet(payload: CreateSubnetRequest):
+@limiter.limit("100/minute")
+async def create_subnet(request: Request, payload: CreateSubnetRequest):
     try:
         if "/" not in payload.cidr:
             cidr = f"{payload.cidr}/24"
@@ -196,7 +215,9 @@ async def create_subnet(payload: CreateSubnetRequest):
 
 
 @app.put("/update-subnet")
+@limiter.limit("100/minute")
 async def update_subnet(
+    request: Request,
     subnet: str,
     disable_gateway_ip: Optional[bool] = False,
     gateway_ip: Optional[str] = None,
@@ -217,7 +238,8 @@ async def update_subnet(
 
 
 @app.put("/delete-subnet")
-async def delete_subnet(subnet: str):
+@limiter.limit("100/minute")
+async def delete_subnet(request: Request, subnet: str):
     try:
         conn = get_openstack_connection()
         result = conn.delete_subnet(subnet)
@@ -230,7 +252,8 @@ async def delete_subnet(subnet: str):
 
 
 @app.get("/flavors/")
-async def get_flavors():
+@limiter.limit("100/minute")
+async def get_flavors(request: Request):
     try:
         conn = get_openstack_connection()
         flavors = conn.list_flavors()
@@ -240,7 +263,8 @@ async def get_flavors():
 
 
 @app.get("/flavors/{flavor_id}")
-async def get_flavor(flavor_id: str):
+@limiter.limit("100/minute")
+async def get_flavor(request: Request, flavor_id: str):
     try:
         conn = get_openstack_connection()
         flavor = conn.get_flavor(flavor_id)
@@ -252,7 +276,8 @@ async def get_flavor(flavor_id: str):
 
 
 @app.post("/create-flavors")
-async def create_flavors(payload: CreateFlavorRequest):
+@limiter.limit("100/minute")
+async def create_flavors(request: Request, payload: CreateFlavorRequest):
     try:
         conn = get_openstack_connection()
         flavor = conn.create_flavor(
@@ -271,7 +296,8 @@ async def create_flavors(payload: CreateFlavorRequest):
 
 
 @app.delete("/delete-flavor")
-async def delete_flavor(flavor: str):
+@limiter.limit("100/minute")
+async def delete_flavor(request: Request, flavor: str):
     try:
         conn = get_openstack_connection()
         result = conn.delete_flavor(flavor)
@@ -284,14 +310,16 @@ async def delete_flavor(flavor: str):
 
 
 @app.get("/images")
-async def get_images():
+@limiter.limit("100/minute")
+async def get_images(request: Request):
     conn = get_openstack_connection()
     images = conn.list_images()
     return [image for image in images]
 
 
 @app.get("/images/{image_name}")
-async def get_image(image_name: str):
+@limiter.limit("100/minute")
+async def get_image(request: Request, image_name: str):
     conn = get_openstack_connection()
     image = conn.get_image(image_name)
     if image is None:
@@ -300,7 +328,8 @@ async def get_image(image_name: str):
 
 
 @app.get("/instances")
-async def get_instances():
+@limiter.limit("100/minute")
+async def get_instances(request: Request):
     try:
         conn = get_openstack_connection()
         instances = conn.list_servers()
@@ -320,7 +349,8 @@ async def get_instances():
 
 
 @app.get("/instances/{instance_id}")
-async def get_instance(instance_id: str):
+@limiter.limit("100/minute")
+async def get_instance(request: Request, instance_id: str):
     try:
         conn = get_openstack_connection()
         instance = conn.get_server(instance_id)
@@ -337,7 +367,8 @@ async def get_instance(instance_id: str):
 
 
 @app.post("/create-instance")
-async def create_instance(payload: CreateVMRequest):
+@limiter.limit("100/minute")
+async def create_instance(request: Request, payload: CreateVMRequest):
     try:
         user_data = (
             ""
@@ -368,7 +399,8 @@ async def create_instance(payload: CreateVMRequest):
 
 
 @app.delete("/delete-instance")
-async def delete_instance(instance: str):
+@limiter.limit("100/minute")
+async def delete_instance(request: Request, instance: str):
     try:
         conn = get_openstack_connection()
         result = conn.delete_server(name_or_id=instance, wait=True, delete_ips=True)
@@ -383,7 +415,8 @@ async def delete_instance(instance: str):
 
 
 @app.get("/routers")
-async def get_routers():
+@limiter.limit("100/minute")
+async def get_routers(request: Request):
     try:
         conn = get_openstack_connection()
         routers = conn.list_routers()
@@ -393,7 +426,8 @@ async def get_routers():
 
 
 @app.get("/routers/{router_id}")
-async def get_router(router_id: str):
+@limiter.limit("100/minute")
+async def get_router(request: Request, router_id: str):
     try:
         conn = get_openstack_connection()
         router = conn.get_router(router_id)
@@ -405,7 +439,8 @@ async def get_router(router_id: str):
 
 
 @app.post("/create-router")
-async def create_router(payload: CreateRouterRequest):
+@limiter.limit("100/minute")
+async def create_router(request: Request, payload: CreateRouterRequest):
     try:
         conn = get_openstack_connection()
         external_net = conn.get_network(payload.external_network)
@@ -422,7 +457,8 @@ async def create_router(payload: CreateRouterRequest):
 
 
 @app.get("/ports")
-async def get_ports(router_id: str):
+@limiter.limit("100/minute")
+async def get_ports(request: Request, router_id: str):
     try:
         conn = get_openstack_connection()
         router = conn.get_router(name_or_id=router_id)
@@ -435,7 +471,8 @@ async def get_ports(router_id: str):
 
 
 @app.post("/add-interface")
-async def add_interface(payload: AddInterfaceRequest):
+@limiter.limit("100/minute")
+async def add_interface(request: Request, payload: AddInterfaceRequest):
     try:
         conn = get_openstack_connection()
         router = conn.get_router(payload.router)
@@ -450,8 +487,12 @@ async def add_interface(payload: AddInterfaceRequest):
 
 
 @app.delete("/remove-interface")
+@limiter.limit("100/minute")
 async def remove_interface(
-    router_id: str, subnet_id: Optional[str] = None, port_id: Optional[str] = None
+    request: Request,
+    router_id: str,
+    subnet_id: Optional[str] = None,
+    port_id: Optional[str] = None,
 ):
     try:
         conn = get_openstack_connection()
@@ -469,7 +510,8 @@ async def remove_interface(
 
 
 @app.delete("/delete-router")
-async def delete_router(router_id: str):
+@limiter.limit("100/minute")
+async def delete_router(request: Request, router_id: str):
     try:
         conn = get_openstack_connection()
         router = conn.get_router(router_id)
@@ -492,7 +534,8 @@ async def delete_router(router_id: str):
 
 
 @app.post("/add-route")
-async def add_route(payload: AddRouteRequest):
+@limiter.limit("100/minute")
+async def add_route(request: Request, payload: AddRouteRequest):
     try:
         conn = get_openstack_connection()
         router = conn.get_router(name_or_id=payload.router)
@@ -512,7 +555,8 @@ async def add_route(payload: AddRouteRequest):
 
 
 @app.delete("/delete-route")
-async def delete_route(payload: DeleteRouteRequest):
+@limiter.limit("100/minute")
+async def delete_route(request: Request, payload: DeleteRouteRequest):
     try:
         conn = get_openstack_connection()
         router = conn.get_router(name_or_id=payload.router)
@@ -535,7 +579,8 @@ async def delete_route(payload: DeleteRouteRequest):
 
 
 @app.get("/security-groups")
-async def get_security_groups():
+@limiter.limit("100/minute")
+async def get_security_groups(request: Request):
     try:
         conn = get_openstack_connection()
         security_groups = conn.list_security_groups()
@@ -545,7 +590,8 @@ async def get_security_groups():
 
 
 @app.get("/security-groups/${security_group_id}")
-async def get_security_group(security_group_id: str):
+@limiter.limit("100/minute")
+async def get_security_group(request: Request, security_group_id: str):
     try:
         conn = get_openstack_connection()
         security_group = conn.get_security_group(security_group_id)
@@ -557,7 +603,8 @@ async def get_security_group(security_group_id: str):
 
 
 @app.post("/create-security-group")
-async def create_security_group(payload: CreateSecurityGroupRequest):
+@limiter.limit("100/minute")
+async def create_security_group(request: Request, payload: CreateSecurityGroupRequest):
     try:
         conn = get_openstack_connection()
         security_group = conn.create_security_group(
@@ -569,7 +616,8 @@ async def create_security_group(payload: CreateSecurityGroupRequest):
 
 
 @app.delete("/delete-security-group")
-async def delete_security_group(security_group_id: str):
+@limiter.limit("100/minute")
+async def delete_security_group(request: Request, security_group_id: str):
     try:
         conn = get_openstack_connection()
         security_group = conn.get_security_group(security_group_id)
@@ -586,7 +634,10 @@ async def delete_security_group(security_group_id: str):
 
 
 @app.post("/create-security-rule")
-async def create_security_rule(payload: CreateSecurityGroupRuleRequest):
+@limiter.limit("100/minute")
+async def create_security_rule(
+    request: Request, payload: CreateSecurityGroupRuleRequest
+):
     try:
         conn = get_openstack_connection()
         security_group = conn.get_security_group(payload.security_group)
@@ -613,7 +664,8 @@ async def create_security_rule(payload: CreateSecurityGroupRuleRequest):
 
 
 @app.delete("/delete-security-rule")
-async def delete_security_rule(security_rule_id: str):
+@limiter.limit("100/minute")
+async def delete_security_rule(request: Request, security_rule_id: str):
     try:
         conn = get_openstack_connection()
         result = conn.delete_security_group_rule(rule_id=security_rule_id)
@@ -627,13 +679,14 @@ async def delete_security_rule(security_rule_id: str):
 
 
 @app.get("/security-rules")
-async def get_security_rules(security_group: str):
+@limiter.limit("100/minute")
+async def get_security_rules(request: Request, security_group: str):
     try:
         conn = get_openstack_connection()
         secgroup = conn.get_security_group(name_or_id=security_group)
         if secgroup is None:
             return HTTPException(status_code=404, detail="Security group not found")
-        return secgroup.security_group_rules # type: ignore
+        return secgroup.security_group_rules  # type: ignore
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
