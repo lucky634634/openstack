@@ -10,7 +10,7 @@ export default function RouterDetailPage() {
     const { id } = useParams();
     const [router, setRouter] = useState({})
     const portColumns = [
-        { field: 'id', headerName: 'ID'},
+        { field: 'id', headerName: 'ID' },
         { field: 'network_id', headerName: 'Network', flex: 1 },
         { field: 'status', headerName: 'Status', flex: 1 },
     ]
@@ -94,6 +94,7 @@ export default function RouterDetailPage() {
 
     useEffect(() => {
         fetchData()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     if (router.id == undefined) {
@@ -165,7 +166,20 @@ export default function RouterDetailPage() {
             </Box>
         </Box >
 
-        <CreatePortDialog open={portOpen} handleClose={() => setPortOpen(false)} router={router.id} />
-        <CreateRouteDialog open={routeOpen} handleClose={() => setRouteOpen(false)} router={router.id} />
+        <CreatePortDialog
+            open={portOpen}
+            handleClose={() => {
+                setPortOpen(false)
+            }}
+            router={router.id}
+        />
+        <CreateRouteDialog
+            open={routeOpen}
+            handleClose={() => {
+                setRouteOpen(false)
+                fetchData()
+            }}
+            router={router.id}
+        />
     </>
 }

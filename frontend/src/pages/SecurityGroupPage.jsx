@@ -8,6 +8,7 @@ import CreateSecurityGroupDialog from "../components/CreateSecurityGroupDialog";
 export default function SecurityGroupPage() {
     const columns = [
         { field: 'id', headerName: 'ID', flex: 1 },
+        { field: 'name', headerName: 'Name', width: 120 },
     ];
 
     const [rows, setRows] = useState([])
@@ -101,6 +102,12 @@ export default function SecurityGroupPage() {
                 onRowSelectionModelChange={(ids) => setSelectedIds(ids.ids)}
             />
         </Box>
-        <CreateSecurityGroupDialog open={open} handleClose={() => { setOpen(false) }} />
+        <CreateSecurityGroupDialog
+            open={open}
+            handleClose={() => {
+                setOpen(false)
+                fetchData()
+            }}
+        />
     </>
 }

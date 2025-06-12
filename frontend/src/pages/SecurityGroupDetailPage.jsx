@@ -12,14 +12,16 @@ export default function SecurityGroupDetailPage() {
     const columns = [
         { field: 'id', headerName: 'ID', flex: 1 },
         { field: 'ethertype', headerName: 'Ethertype', width: 90 },
-        { field: 'protocol', headerName: 'Protocol', width: 90 },
         { field: 'direction', headerName: 'Direction', width: 90 },
+        { field: 'protocol', headerName: 'Protocol', width: 90 },
         { field: 'port_range_min', headerName: 'Port Range Min', width: 90 },
         { field: 'port_range_max', headerName: 'Port Range Max', width: 90 },
         { field: 'remote_ip_prefix', headerName: 'Remote IP Prefix', width: 90 },
         { field: 'remote_address_group_id', headerName: 'Remote Address Group ID', width: 90 },
         { field: 'normalized_cidr', headerName: 'Normalized CIDR', width: 90 },
         { field: 'remote_group_id', headerName: 'Remote Group ID', width: 90 },
+        { field: 'standard_attr_id', headerName: 'Standard Attr ID', width: 90 },
+        { field: 'belongs_to_default_sg', headerName: 'Belongs to Default SG', width: 90 },
     ]
     const [selectedIds, setSelectedIds] = useState([]);
     const [open, setOpen] = useState(false);
@@ -95,6 +97,13 @@ export default function SecurityGroupDetailPage() {
                 onRowSelectionModelChange={(rows) => setSelectedIds(rows.ids)}
             />
         </Box >
-        <CreateSecurityRuleDialog open={open} handleClose={() => setOpen(false)} secgroup_id={id} />
+        <CreateSecurityRuleDialog
+            open={open}
+            handleClose={() => {
+                setOpen(false)
+                fetchData()
+            }}
+            secgroup_id={id}
+        />
     </>
 }

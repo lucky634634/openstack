@@ -101,6 +101,12 @@ export default function RouterPage() {
                 onRowSelectionModelChange={(ids) => setSelectedIds(ids.ids)}
             />
         </Box>
-        <CreateRouterDialog open={open} handleClose={() => { setOpen(false) }} />
+        <CreateRouterDialog
+            open={open}
+            handleClose={() => {
+                setOpen(false)
+                fetchData()
+            }}
+        />
     </>
 }

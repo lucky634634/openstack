@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, Typography, Dialog, DialogTitle, DialogContent } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import api from "../api";
@@ -49,7 +49,7 @@ export default function FlavorPage() {
         await fetchData()
     }
 
-    React.useEffect(() => { fetchData() }, [])
+    useEffect(() => { fetchData() }, [])
 
     return <>
         <Typography variant="h4">Flavor Page</Typography>
@@ -88,6 +88,12 @@ export default function FlavorPage() {
                 onRowSelectionModelChange={(rows) => setSelectedIds(rows.ids)}
             />
         </Box>
-        <CreateFlavorDialog open={open} handleClose={() => { setOpen(false) }} />
+        <CreateFlavorDialog
+            open={open}
+            handleClose={() => {
+                setOpen(false)
+                fetchData()
+            }}
+        />
     </>
 }

@@ -81,6 +81,12 @@ export default function VMPage() {
         <Box sx={{ width: "100%", height: "600px" }}>
             <DataGrid rows={rows} columns={columns} checkboxSelection onRowSelectionModelChange={(ids) => setSelectedIds(Array.from(ids.ids))} />
         </Box>
-        <CreateVMDialog open={open} handleClose={() => { setOpen(false) }} />
+        <CreateVMDialog
+            open={open}
+            handleClose={() => {
+                setOpen(false)
+                fetchData()
+            }}
+        />
     </>
 }

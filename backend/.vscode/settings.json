@@ -2,10 +2,15 @@
     "cSpell.words": [
         "dotenv",
         "ethertype",
+        "fastapi",
         "nexthop",
+        "openstacksdk",
         "openstackutil",
+        "pydantic",
         "secgroup",
+        "slowapi",
         "snat",
+        "uvicorn",
         "vcpus"
     ]
 }

@@ -17,7 +17,7 @@ export default function NetworkDetailPage() {
     const [selectedIds, setSelectedIds] = useState([]);
     const [open, setOpen] = useState(false);
 
-    async function fetchNetwork() {
+    async function fetchData() {
         setSubnetList([])
         let net = {}
         const subnets = []
@@ -65,11 +65,12 @@ export default function NetworkDetailPage() {
                 })
         }
         setSelectedIds([])
-        await fetchNetwork()
+        await fetchData()
     }
 
     useEffect(() => {
-        fetchNetwork();
+        fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return <>
@@ -78,7 +79,7 @@ export default function NetworkDetailPage() {
             <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                 <Button
                     variant="contained"
-                    onClick={() => fetchNetwork()}
+                    onClick={() => fetchData()}
                 >
                     Refresh
                 </Button>
@@ -103,6 +104,13 @@ export default function NetworkDetailPage() {
                 onRowSelectionModelChange={(ids) => setSelectedIds(ids.ids)}
             />
         </Box>
-        <CreateSubnetDialog open={open} handleClose={() => setOpen(false)} network={network.id} />
+        <CreateSubnetDialog
+            open={open}
+            handleClose={() => {
+                setOpen(false)
+                fetchData()
+            }}
+            network={network.id}
+        />
     </>
 }

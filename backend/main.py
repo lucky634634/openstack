@@ -28,10 +28,7 @@ app.add_middleware(SlowAPIMiddleware)
 # openstack
 openstack.enable_logging(debug=True, path="openstack.log", format_stream=True)
 
-# conn = openstack.connect(cloud="local")
-
 load_dotenv()
-
 
 def get_openstack_connection():
     return openstack.connect(cloud="local")
