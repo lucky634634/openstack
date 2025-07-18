@@ -26,6 +26,7 @@ export default function NetworkDetailPage() {
                 console.log(response);
                 try {
                     net = response.data
+                    console.log(net)
                 } catch (error) {
                     console.error(error);
                 }
@@ -85,7 +86,7 @@ export default function NetworkDetailPage() {
                 </Button>
                 <Button
                     variant="contained"
-                    disabled={selectedIds.size === 0}
+                    disabled={selectedIds.length === 0}
                     onClick={() => deleteSubnets()}
                 >
                     Delete
@@ -101,7 +102,7 @@ export default function NetworkDetailPage() {
                 columns={subnetColumns}
                 rows={subnetList}
                 checkboxSelection
-                onRowSelectionModelChange={(ids) => setSelectedIds(ids.ids)}
+                onRowSelectionModelChange={(ids) => setSelectedIds(Array.from(ids.ids))}
             />
         </Box>
         <CreateSubnetDialog

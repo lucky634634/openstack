@@ -76,7 +76,7 @@ export default function SecurityGroupDetailPage() {
                 <Button
                     variant="contained"
                     color="primary"
-                    disabled={selectedIds.size === 0}
+                    disabled={selectedIds.length === 0}
                     onClick={deleteRules}
                 >
                     delete
@@ -94,7 +94,7 @@ export default function SecurityGroupDetailPage() {
                 columns={columns}
                 rows={ruleList}
                 checkboxSelection
-                onRowSelectionModelChange={(rows) => setSelectedIds(rows.ids)}
+                onRowSelectionModelChange={(rows) => setSelectedIds(Array.from(rows.ids))}
             />
         </Box >
         <CreateSecurityRuleDialog

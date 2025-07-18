@@ -1,5 +1,7 @@
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+import openstack.connection
 import uvicorn
 import openstack
 from dotenv import load_dotenv
@@ -7,6 +9,7 @@ import os
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.middleware import SlowAPIMiddleware
+from websockets import serve
 
 from openstackutil import *
 
@@ -14,24 +17,23 @@ from openstackutil import *
 app = FastAPI(debug=True)
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 app.state.limiter = limiter
-
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
 app.add_middleware(SlowAPIMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # openstack
 openstack.enable_logging(debug=True, path="openstack.log", format_stream=True)
 
 load_dotenv()
 
+
 def get_openstack_connection():
-    return openstack.connect(cloud="local")
+    return openstack.connection.Connection(cloud="local")
 
 
 @app.get("/")
@@ -44,8 +46,14 @@ async def health(request: Request):
 @app.get("/test/{id}")
 @limiter.limit("100/minute")
 async def test(request: Request, id: str):
-    print(request)
-    return {"id": id}
+    conn = get_openstack_connection()
+    server = conn.get_server(id)
+    console = conn.compute.create_server_remote_console(
+        server.id, protocol="vnc", type="novnc"
+    )
+    # console = conn.compute.create_server_console(server.id, protocol="vnc")
+
+    return console
 
 
 @app.get("/networks/")
@@ -407,6 +415,41 @@ async def delete_instance(request: Request, instance: str):
             return HTTPException(
                 status_code=500, detail=str("Instance deletion failed")
             )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/power-on-instance/{instance}")
+@limiter.limit("100/minute")
+async def power_on_instance(request: Request, instance: str):
+    try:
+        conn = get_openstack_connection()
+        server = conn.get_server(name_or_id=instance)
+        if server is None:
+            return HTTPException(status_code=500, detail=str("Instance not found"))
+        if server.status != "ACTIVE":
+            return HTTPException(status_code=500, detail=str("Instance is not active"))
+        conn.compute.start_server(server)
+        for server in servers:
+            server.action(session=conn.session, body=actionBody)
+        return {"message": "Instance powered on successfully"}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/get-console")
+async def get_console(request: Request, instance: str):
+    try:
+        conn = get_openstack_connection()
+        server = conn.get_server(name_or_id=instance)
+        if server is None:
+            return HTTPException(status_code=500, detail=str("Instance not found"))
+        if server.status != "ACTIVE":
+            return HTTPException(status_code=500, detail=str("Instance is not active"))
+        console = conn.compute.create_server_remote_console(
+            server.id, protocol="vnc", type="novnc"
+        )
+        return console
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 

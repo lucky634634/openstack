@@ -47,6 +47,34 @@ export default function VMPage() {
         await fetchData()
     }
 
+    async function activeVM() {
+        for (let id of selectedIds) {
+            await api.post("/power-on-instance", { params: { instance: id } })
+                .then(response => {
+                    console.log(response);
+                    alert("Instance active successfully");
+                })
+                .catch(error => {
+                    console.error(error);
+                })
+        }
+        await fetchData()
+    }
+
+    async function GetConsole() {
+        for (let id of selectedIds) {
+            await api.get("/get-console", { params: { instance: id } })
+                .then(response => {
+                    console.log(response);
+                    alert(response.data.url);
+                })
+                .catch(error => {
+                    console.error(error);
+                })
+        }
+        await fetchData()
+    }
+
     React.useEffect(() => { fetchData() }, [])
 
     return <>
@@ -72,10 +100,28 @@ export default function VMPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                disabled={selectedIds.size === 0}
+                disabled={selectedIds.length === 0}
                 onClick={deleteData}
             >
                 Delete
+            </Button>
+            <Button
+                variant="contained"
+                sx={{ marginRight: "5px" }}
+                color="primary"
+                disabled={selectedIds.length === 0}
+                onClick={activeVM}
+            >
+                Active
+            </Button>
+            <Button
+                variant="contained"
+                sx={{ marginRight: "5px" }}
+                color="primary"
+                onClick={GetConsole}
+                disabled={selectedIds.length !== 1}
+            >
+                Get Console
             </Button>
         </Box >
         <Box sx={{ width: "100%", height: "600px" }}>

@@ -118,7 +118,7 @@ export default function RouterDetailPage() {
                     <Button
                         variant="contained"
                         color="primary"
-                        disabled={selectedPorts.size === 0}
+                        disabled={selectedPorts.length === 0}
                         onClick={deletePorts}
                     >
                         delete
@@ -136,7 +136,7 @@ export default function RouterDetailPage() {
                     columns={portColumns}
                     rows={portList}
                     checkboxSelection
-                    onRowSelectionModelChange={(rows) => setSelectedPorts(rows.ids)}
+                    onRowSelectionModelChange={(rows) => setSelectedPorts(Array.from(rows.ids))}
                 />
             </Box>
             <Box>
@@ -161,7 +161,7 @@ export default function RouterDetailPage() {
                     columns={routeColumns}
                     rows={routeList}
                     checkboxSelection
-                    onRowSelectionModelChange={(rows) => setSelectedRoutes(rows.ids)}
+                    onRowSelectionModelChange={(rows) => setSelectedRoutes(Array.from(rows.ids))}
                 />
             </Box>
         </Box >

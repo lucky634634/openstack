@@ -66,7 +66,7 @@ function NetworkPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                disabled={selectedIds.size === 0}
+                disabled={selectedIds.length === 0}
                 onClick={() => {
                     deleteData()
                     fetchData()
@@ -79,8 +79,7 @@ function NetworkPage() {
                 disabled={selectedIds.size !== 1}
                 onClick={
                     () => {
-                        console.log(Array.from(selectedIds)[0])
-                        navigate('/network/' + Array.from(selectedIds)[0])
+                        navigate('/network/' + selectedIds[0])
                     }
                 }
             >Detail</Button>
@@ -90,7 +89,7 @@ function NetworkPage() {
                 rows={rows}
                 columns={columns}
                 checkboxSelection
-                onRowSelectionModelChange={(rows) => setSelectedIds(rows.ids)}
+                onRowSelectionModelChange={(rows) => setSelectedIds(Array.from(rows.ids))}
             />
         </Box>
         <CreateNetworkDialog

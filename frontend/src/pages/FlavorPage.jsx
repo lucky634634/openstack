@@ -74,7 +74,7 @@ export default function FlavorPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                disabled={selectedIds.size === 0}
+                disabled={selectedIds.length === 0}
                 onClick={deleteData}
             >
                 Delete
@@ -85,7 +85,7 @@ export default function FlavorPage() {
                 rows={rows}
                 columns={columns}
                 checkboxSelection
-                onRowSelectionModelChange={(rows) => setSelectedIds(rows.ids)}
+                onRowSelectionModelChange={(rows) => setSelectedIds(Array.from(rows.ids))}
             />
         </Box>
         <CreateFlavorDialog

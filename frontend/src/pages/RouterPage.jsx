@@ -73,7 +73,7 @@ export default function RouterPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                disabled={selectedIds.size === 0}
+                disabled={selectedIds.length === 0}
                 onClick={deleteData}
             >
                 Delete
@@ -82,11 +82,10 @@ export default function RouterPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                disabled={selectedIds.size !== 1}
+                disabled={selectedIds.length !== 1}
                 onClick={
                     () => {
-                        console.log(Array.from(selectedIds)[0]);
-                        navigate(`/router/${Array.from(selectedIds)[0]}`)
+                        navigate(`/router/${selectedIds[0]}`)
                     }
                 }
             >
@@ -98,7 +97,7 @@ export default function RouterPage() {
                 rows={rows}
                 columns={columns}
                 checkboxSelection
-                onRowSelectionModelChange={(ids) => setSelectedIds(ids.ids)}
+                onRowSelectionModelChange={(ids) => setSelectedIds(Array.from(ids.ids))}
             />
         </Box>
         <CreateRouterDialog

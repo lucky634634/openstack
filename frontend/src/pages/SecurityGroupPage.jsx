@@ -74,7 +74,7 @@ export default function SecurityGroupPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                disabled={selectedIds.size === 0}
+                disabled={selectedIds.length === 0}
                 onClick={deleteData}
             >
                 Delete
@@ -83,7 +83,7 @@ export default function SecurityGroupPage() {
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
-                disabled={selectedIds.size !== 1}
+                disabled={selectedIds.length !== 1}
                 onClick={
                     () => {
                         console.log(Array.from(selectedIds)[0]);
@@ -99,7 +99,7 @@ export default function SecurityGroupPage() {
                 rows={rows}
                 columns={columns}
                 checkboxSelection
-                onRowSelectionModelChange={(ids) => setSelectedIds(ids.ids)}
+                onRowSelectionModelChange={(ids) => setSelectedIds(Array.from(ids.ids))}
             />
         </Box>
         <CreateSecurityGroupDialog
