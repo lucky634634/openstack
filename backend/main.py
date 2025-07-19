@@ -344,6 +344,7 @@ async def upload_image(
     temp_path = ""
     try:
         content = await file.read()
+
         temp_path = f"./tmp/{file.filename}"
         with open(temp_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -779,6 +780,8 @@ async def get_security_rules(request: Request, security_group: str):
 
 
 if __name__ == "__main__":
+    os.removedirs("./tmp")
+    os.makedirs("./tmp", exist_ok=True)
     host = str(os.getenv("HOST_IP", "localhost"))
     port = int(os.getenv("PORT", 8080))
     uvicorn.run(app, host=host, port=port)
