@@ -332,34 +332,32 @@ async def get_image(request: Request, image_name: str):
     return image
 
 
-@app.put("/upload-image")
+@app.post("/upload-image")
 @limiter.limit("100/minute")
 async def upload_image(
     request: Request,
-    file: UploadFile = File(...),
-    name: str = "",
+    image_name: str = "",
     disk_format: str = "",
-    container_format: str = "bare",
     visibility: str = "public",
+    file: UploadFile = File(...),
 ):
     temp_path = ""
     try:
-        temp_path = f"./{file.filename}"
+        content = await file.read()
+        temp_path = f"./tmp/{file.filename}"
         with open(temp_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
         conn = get_openstack_connection()
         image = conn.create_image(
             filename=temp_path,
-            name=name,
+            name=image_name,
             disk_format=disk_format,
-            container_format=container_format,
+            container_format="bare",
             visibility=visibility,
         )
-        os.remove(temp_path)
         return image
     except Exception as e:
-        os.remove(temp_path)
         return HTTPException(status_code=500, detail=str(e))
 
 

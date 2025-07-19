@@ -13,6 +13,7 @@ import NetworkDetailPage from "./pages/NetworkDetailPage";
 import RouterDetailPage from "./pages/RouterDetailPage";
 import SecurityGroupPage from "./pages/SecurityGroupPage";
 import SecurityGroupDetailPage from "./pages/SecurityGroupDetailPage";
+import ImagePage from "./pages/ImagePage";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
             <Route path="/router/:id" element={<RouterDetailPage />} />
             <Route path="/security-group" element={<SecurityGroupPage />} />
             <Route path="/security-group/:id" element={<SecurityGroupDetailPage />} />
+            <Route path="/image" element={<ImagePage />} />
           </Routes>
         </Box>
       </Box>

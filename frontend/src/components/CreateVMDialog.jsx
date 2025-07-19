@@ -132,8 +132,8 @@ export default function CreateVMDialog({ open, handleClose }) {
                         label="Image"
                     >
                         {imageList.map((image, index) => (
-                            <MenuItem key={index} value={image.name}>
-                                {image.name}
+                            <MenuItem key={index} value={image.id}>
+                                {image.id}
                             </MenuItem>))}
                     </Select>
                 </FormControl>
