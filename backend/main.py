@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import openstack.connection
 import uvicorn
@@ -9,7 +9,7 @@ import os
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.middleware import SlowAPIMiddleware
-from websockets import serve
+import shutil
 
 from openstackutil import *
 
@@ -330,6 +330,51 @@ async def get_image(request: Request, image_name: str):
     if image is None:
         return {"error": "Image not found"}
     return image
+
+
+@app.put("/upload-image")
+@limiter.limit("100/minute")
+async def upload_image(
+    request: Request,
+    file: UploadFile = File(...),
+    name: str = "",
+    disk_format: str = "",
+    container_format: str = "bare",
+    visibility: str = "public",
+):
+    temp_path = ""
+    try:
+        temp_path = f"./{file.filename}"
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        conn = get_openstack_connection()
+        image = conn.create_image(
+            filename=temp_path,
+            name=name,
+            disk_format=disk_format,
+            container_format=container_format,
+            visibility=visibility,
+        )
+        os.remove(temp_path)
+        return image
+    except Exception as e:
+        os.remove(temp_path)
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/delete-image")
+@limiter.limit("100/minute")
+async def delete_image(request: Request, image_id: str):
+    try:
+        conn = get_openstack_connection()
+        result = conn.delete_image(name_or_id=image_id)
+        if result:
+            return {"message": "Image deleted successfully"}
+        else:
+            return HTTPException(status_code=500, detail=str("Image deletion failed"))
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/instances")

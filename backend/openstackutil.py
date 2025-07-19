@@ -1,4 +1,5 @@
-from fastapi import security
+from click import File
+from fastapi import security, File
 from pydantic import BaseModel
 from typing import Dict, List, Optional
 
@@ -92,3 +93,10 @@ class CreateSecurityGroupRuleRequest(BaseModel):
     remote_ip_prefix: Optional[str] = None
     remote_group_id: Optional[str] = None
     ethertype: str = "IPv4"
+
+
+class UploadImageRequest(BaseModel):
+    name: str
+    disk_format: str
+    container_format: str
+    visibility: str

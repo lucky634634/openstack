@@ -4,7 +4,7 @@ mkdir -p ~/.config/openstack
 
 cat > ~/.config/openstack/clouds.yaml <<EOF
 clouds:
-  openstack:
+  local:
     auth:
       auth_url: ${OS_AUTH_URL}
       username: ${OS_USERNAME}
