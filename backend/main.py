@@ -344,6 +344,7 @@ async def get_instances(request: Request):
                 name=instance.name,
                 status=instance.status,
                 network_list=[network for network in instance.addresses.keys()],
+                security_group_list=[sg["name"] for sg in instance.security_groups],
             )
             for instance in instances
             if instance is not None
@@ -366,6 +367,7 @@ async def get_instance(request: Request, instance_id: str):
             name=instance.name,
             status=instance.status,
             network_list=[network for network in instance.addresses.keys()],
+            security_group_list=[sg["name"] for sg in instance.security_groups],
         )
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
@@ -398,6 +400,7 @@ async def create_instance(request: Request, payload: CreateVMRequest):
             name=instance.name,
             status=instance.status,
             network_list=[network for network in instance.addresses.keys()],
+            security_group_list=[sg["name"] for sg in instance.security_groups],
         )
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))

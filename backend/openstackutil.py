@@ -1,3 +1,4 @@
+from fastapi import security
 from pydantic import BaseModel
 from typing import Dict, List, Optional
 
@@ -7,6 +8,7 @@ class Instance(BaseModel):
     name: str
     status: str
     network_list: List[str]
+    security_group_list: List[str]
 
 
 class CreateNetworkWithSubnetRequest(BaseModel):
