@@ -471,7 +471,7 @@ async def power_on_instance(request: Request, instance: str):
         # conn.compute.start_server(server)
         # for server in servers:
         #     server.action(session=conn.session, body=actionBody)
-        server.reboot(conn.session, reboot_type="SOFT")
+        conn.compute.reboot_server(server=server, reboot_type="SOFT")
         return {"message": "Instance powered on successfully"}
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
