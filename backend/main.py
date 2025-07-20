@@ -466,11 +466,12 @@ async def power_on_instance(request: Request, instance: str):
         server = conn.get_server(name_or_id=instance)
         if server is None:
             return HTTPException(status_code=500, detail=str("Instance not found"))
-        if server.status != "ACTIVE":
-            return HTTPException(status_code=500, detail=str("Instance is not active"))
-        conn.compute.start_server(server)
-        for server in servers:
-            server.action(session=conn.session, body=actionBody)
+        # if server.status != "ACTIVE":
+        #     return HTTPException(status_code=500, detail=str("Instance is not active"))
+        # conn.compute.start_server(server)
+        # for server in servers:
+        #     server.action(session=conn.session, body=actionBody)
+        server.reboot(conn.session, reboot_type="SOFT")
         return {"message": "Instance powered on successfully"}
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
@@ -771,15 +772,51 @@ async def get_security_rules(request: Request, security_group: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# @app.get("/vcpus")
-# @limiter.limit("100/minute")
-# async def get_vcpus(request: Request):
-#     try:
-#         conn = get_openstack_connection()
-#         hypervisor = conn.hyper
-#         return conn.list_vcpus()
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
+@app.post("/add-security-group-to-instance")
+@limiter.limit("100/minute")
+async def add_security_group_to_instance(
+    request: Request, instance_id: str, security_group_id: str
+):
+    try:
+        conn = get_openstack_connection()
+        server = conn.get_server(name_or_id=instance_id)
+        if server is None:
+            return HTTPException(status_code=404, detail="Instance not found")
+        security_group = conn.get_security_group(name_or_id=security_group_id)
+        if security_group is None:
+            return HTTPException(status_code=404, detail="Security group not found")
+        result = server.add_security_group_to_server(server, security_group)
+        if result:
+            return {"message": "Security group added to instance successfully"}
+        return HTTPException(
+            status_code=500, detail=str("Security group addition to instance failed")
+        )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/remove-security-group-from-instance")
+@limiter.limit("100/minute")
+async def remove_security_group_from_instance(
+    request: Request, instance_id: str, security_group_id: str
+):
+    try:
+        conn = get_openstack_connection()
+        server = conn.get_server(name_or_id=instance_id)
+        if server is None:
+            return HTTPException(status_code=404, detail="Instance not found")
+        security_group = conn.get_security_group(name_or_id=security_group_id)
+        if security_group is None:
+            return HTTPException(status_code=404, detail="Security group not found")
+        result = server.remove_security_group_from_server(server, security_group)
+        if result:
+            return {"message": "Security group removed from instance successfully"}
+        return HTTPException(
+            status_code=500, detail=str("Security group removal from instance failed")
+        )
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     host = str(os.getenv("HOST_IP", "localhost"))
