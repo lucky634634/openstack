@@ -27,12 +27,12 @@ export default function SecurityGroupDetailPage() {
     const [open, setOpen] = useState(false);
 
     async function fetchData() {
-        await api.get(`/security-groups/`, { params: { security_group_id: id } })
+        await api.get(`/security-groups/$${id}`)
             .then(response => {
                 console.log(response);
                 try {
                     setSecgroup(response.data);
-                    setRuleList(response.data.rules)
+                    setRuleList(response.data.security_group_rules)
                 } catch (error) {
                     console.error(error);
                 }
@@ -63,7 +63,7 @@ export default function SecurityGroupDetailPage() {
 
 
     return <>
-        <Typography variant="h4">Router {secgroup.name} Detail Page</Typography>
+        <Typography variant="h4">Security group {secgroup.name} Detail Page</Typography>
         <Box>
             <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                 <Button

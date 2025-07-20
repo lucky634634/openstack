@@ -43,17 +43,14 @@ async def health(request: Request):
     return {"status": "OK"}
 
 
-@app.get("/test/{id}")
+@app.get("/test")
 @limiter.limit("100/minute")
-async def test(request: Request, id: str):
+async def test(request: Request):
     conn = get_openstack_connection()
-    server = conn.get_server(id)
-    console = conn.compute.create_server_remote_console(
-        server.id, protocol="vnc", type="novnc"
-    )
-    # console = conn.compute.create_server_console(server.id, protocol="vnc")
+    hypervisors = conn.list_hypervisors()
+    print(hypervisors[0].get_uptime())
 
-    return console
+    return hypervisors
 
 
 @app.get("/networks/")
@@ -336,26 +333,21 @@ async def get_image(request: Request, image_name: str):
 @limiter.limit("100/minute")
 async def upload_image(
     request: Request,
-    image_name: str = "",
+    name: str = "",
     disk_format: str = "",
     visibility: str = "public",
     file: UploadFile = File(...),
 ):
-    temp_path = ""
     try:
         content = await file.read()
 
-        temp_path = f"./tmp/{file.filename}"
-        with open(temp_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
         conn = get_openstack_connection()
-        image = conn.create_image(
-            filename=temp_path,
-            name=image_name,
+        image = conn.image.create_image(
+            name=name,
             disk_format=disk_format,
             container_format="bare",
             visibility=visibility,
+            data=content,
         )
         return image
     except Exception as e:
@@ -779,9 +771,17 @@ async def get_security_rules(request: Request, security_group: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# @app.get("/vcpus")
+# @limiter.limit("100/minute")
+# async def get_vcpus(request: Request):
+#     try:
+#         conn = get_openstack_connection()
+#         hypervisor = conn.hyper
+#         return conn.list_vcpus()
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
-    os.removedirs("./tmp")
-    os.makedirs("./tmp", exist_ok=True)
     host = str(os.getenv("HOST_IP", "localhost"))
     port = int(os.getenv("PORT", 8080))
     uvicorn.run(app, host=host, port=port)

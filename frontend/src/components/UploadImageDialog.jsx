@@ -32,10 +32,11 @@ export default function UploadImageDialog({ open, handleClose }) {
 
     async function createImage() {
         const formData = new FormData();
-        formData.append('image_name', name);
+        formData.append('name', name);
         formData.append('disk_format', diskFormat);
         formData.append('visibility', visibility);
         formData.append('file', file);
+        console.log(formData)
         await api.post('/upload-image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then(response => {
                 console.log(response);
