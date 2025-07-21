@@ -458,19 +458,14 @@ async def delete_instance(request: Request, instance: str):
         return HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/power-on-instance/{instance}")
+@app.post("/reboot-instance/{instance}")
 @limiter.limit("100/minute")
-async def power_on_instance(request: Request, instance: str):
+async def reboot_instance(request: Request, instance: str):
     try:
         conn = get_openstack_connection()
         server = conn.get_server(name_or_id=instance)
         if server is None:
             return HTTPException(status_code=500, detail=str("Instance not found"))
-        # if server.status != "ACTIVE":
-        #     return HTTPException(status_code=500, detail=str("Instance is not active"))
-        # conn.compute.start_server(server)
-        # for server in servers:
-        #     server.action(session=conn.session, body=actionBody)
         conn.compute.reboot_server(server=server, reboot_type="SOFT")
         return {"message": "Instance powered on successfully"}
     except Exception as e:
@@ -669,7 +664,7 @@ async def get_security_groups(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/security-groups/${security_group_id}")
+@app.get("/security-groups/{security_group_id}")
 @limiter.limit("100/minute")
 async def get_security_group(request: Request, security_group_id: str):
     try:
@@ -758,7 +753,7 @@ async def delete_security_rule(request: Request, security_rule_id: str):
         return HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/security-rules")
+@app.get("/security-rules/{security_group}")
 @limiter.limit("100/minute")
 async def get_security_rules(request: Request, security_group: str):
     try:
@@ -795,7 +790,7 @@ async def add_security_group_to_instance(
         return HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/remove-security-group-from-instance")
+@app.delete("/remove-security-group-from-instance")
 @limiter.limit("100/minute")
 async def remove_security_group_from_instance(
     request: Request, instance_id: str, security_group_id: str

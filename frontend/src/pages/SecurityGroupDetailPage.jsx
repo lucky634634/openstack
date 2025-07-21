@@ -27,7 +27,7 @@ export default function SecurityGroupDetailPage() {
     const [open, setOpen] = useState(false);
 
     async function fetchData() {
-        await api.get(`/security-groups/$${id}`)
+        await api.get(`/security-groups/${id}`)
             .then(response => {
                 console.log(response);
                 try {

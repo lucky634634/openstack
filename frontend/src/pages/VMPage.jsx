@@ -47,9 +47,9 @@ export default function VMPage() {
         await fetchData()
     }
 
-    async function activeVM() {
+    async function rebootVM() {
         for (let id of selectedIds) {
-            await api.post("/power-on-instance", { params: { instance: id } })
+            await api.post("/reboot-instance", { params: { instance: id } })
                 .then(response => {
                     console.log(response);
                     alert("Instance active successfully");
@@ -110,9 +110,9 @@ export default function VMPage() {
                 sx={{ marginRight: "5px" }}
                 color="primary"
                 disabled={selectedIds.length === 0}
-                onClick={activeVM}
+                onClick={rebootVM}
             >
-                Active
+                Reboot
             </Button>
             <Button
                 variant="contained"

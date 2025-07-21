@@ -23,24 +23,26 @@ export default function AddSecurityGroupDialog({ id, open, handleClose }) {
     const [securityGroup, setSecurityGroup] = useState()
     const [securityGroupList, setSecurityGroupList] = useState([])
 
-    const [instance, setInstance] = useState({})
+    const [instance, setInstance] = useState(null)
 
     async function fetchSecurityGroupList() {
         await api.get('/security-groups')
             .then(response => {
                 console.log(response);
-                try {
-                    setSecurityGroupList(response.data);
-                } catch (error) {
-                    console.error(error);
+                const data = Array.from(response.data);
+                for (let sg of data) {
+                    if (instance.security_group_list.includes(sg.id)) {
+                        data.splice(data.indexOf(sg), 1);
+                    }
                 }
+                setSecurityGroupList(data);
             })
             .catch(error => {
                 console.error(error);
             })
     }
 
-    async function fetchInstanceList() {
+    async function fetchInstance() {
         await api.get('/instances/' + id)
             .then(response => {
                 console.log(response);
@@ -55,19 +57,33 @@ export default function AddSecurityGroupDialog({ id, open, handleClose }) {
             })
     }
 
+    async function addSecurityGroup() {
+        await api.post('/add-security-group-to-instance', { instance_id: id, security_group_id: securityGroup })
+            .then(response => {
+                console.log(response);
+                alert("Security group added successfully");
+            })
+            .catch(error => {
+                console.error(error);
+                alert(error)
+            })
+    }
+
     const handleCreate = () => {
-        handleClose()
+        addSecurityGroup()
+        handleCancel()
     };
 
     const handleCancel = () => {
         setSecurityGroupList([])
-        setInstance({})
+        setInstance(null)
         handleClose()
     };
 
     useEffect(() => {
+        fetchInstance()
         fetchSecurityGroupList()
-        fetchInstanceList()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     return (
