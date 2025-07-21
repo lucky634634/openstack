@@ -47,10 +47,8 @@ async def health(request: Request):
 @limiter.limit("100/minute")
 async def test(request: Request):
     conn = get_openstack_connection()
-    hypervisors = conn.list_hypervisors()
-    print(hypervisors[0].get_uptime())
-
-    return hypervisors
+    qosList = conn.list_qos_policies()
+    return qosList
 
 
 @app.get("/networks/")

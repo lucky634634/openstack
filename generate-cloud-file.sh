@@ -16,6 +16,7 @@ clouds:
     interface: ${OS_INTERFACE}
     identity_api_version: ${OS_IDENTITY_API_VERSION}
     verify: false
+	volume_api_version: '3'
 EOF
 
 chmod 600 ~/.config/openstack/clouds.yaml
