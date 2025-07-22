@@ -14,6 +14,7 @@ import RouterDetailPage from "./pages/RouterDetailPage";
 import SecurityGroupPage from "./pages/SecurityGroupPage";
 import SecurityGroupDetailPage from "./pages/SecurityGroupDetailPage";
 import ImagePage from "./pages/ImagePage";
+import VMDetailPage from "./pages/VMDetailPage";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="/flavor" element={<FlavorPage />} />
             <Route path="/router" element={<RouterPage />} />
             <Route path="/network/:id" element={<NetworkDetailPage />} />
+            <Route path="/add-remove-security-group/:id" element={<VMDetailPage />} />
             <Route path="/router/:id" element={<RouterDetailPage />} />
             <Route path="/security-group" element={<SecurityGroupPage />} />
             <Route path="/security-group/:id" element={<SecurityGroupDetailPage />} />
