@@ -80,8 +80,8 @@ export default function CreatePortDialog({ open, handleClose, router }) {
                         label="External network"
                     >
                         {subnetList.map((sub, index) => (
-                            <MenuItem key={index} value={sub.name}>
-                                {sub.name} {sub.cidr}
+                            <MenuItem key={index} value={sub.id}>
+                                {sub.id} {sub.cidr}
                             </MenuItem>))}
                     </Select>
                 </FormControl>

@@ -146,8 +146,8 @@ export default function CreateVMDialog({ open, handleClose }) {
                         label="Flavor"
                     >
                         {flavorList.map((flavor, index) => (
-                            <MenuItem key={index} value={flavor.name}>
-                                {flavor.name}
+                            <MenuItem key={index} value={flavor.id}>
+                                {flavor.id}
                             </MenuItem>))}
                     </Select>
                 </FormControl>
@@ -160,8 +160,8 @@ export default function CreateVMDialog({ open, handleClose }) {
                         label="Network"
                     >
                         {networkList.map((network, index) => (
-                            <MenuItem key={index} value={network.name}>
-                                {network.name}
+                            <MenuItem key={index} value={network.id}>
+                                {network.id}
                             </MenuItem>))}
                     </Select>
                 </FormControl>
