@@ -47,8 +47,9 @@ async def health(request: Request):
 @limiter.limit("100/minute")
 async def test(request: Request):
     conn = get_openstack_connection()
-    qosList = conn.list_qos_policies()
-    return qosList
+    server = conn.list_servers()[0]
+    print(server)
+    return server
 
 
 @app.get("/networks/")
@@ -667,10 +668,12 @@ async def get_security_groups(request: Request):
 async def get_security_group(request: Request, security_group_id: str):
     try:
         conn = get_openstack_connection()
-        security_group = conn.get_security_group(security_group_id)
-        if security_group is None:
-            raise HTTPException(status_code=404, detail="Security group not found")
-        return security_group
+        security_group_list = conn.list_security_groups()
+        for security_group in security_group_list:
+            if security_group.id == security_group_id:
+                return security_group
+
+        return None
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

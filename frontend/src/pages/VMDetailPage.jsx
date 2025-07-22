@@ -18,17 +18,19 @@ export default function VMDetailPage() {
     const [open, setOpen] = useState(false);
 
     async function fetchData() {
-        let securityGroupIds = []
-        let securityGroupList = []
         await api.get(`/instances/${id}`)
             .then(response => {
                 console.log(response);
                 setVm(response.data);
-                securityGroupIds = Array.from(response.data.security_group_list)
+
             }).catch(error => {
                 console.error(error);
             })
+    }
 
+    async function fetchSG() {
+        let securityGroupList = []
+        let securityGroupIds = vm.security_group_list
         for (let sg of securityGroupIds) {
             await api.get(`/security-groups/${sg}`)
                 .then(response => {
@@ -55,17 +57,18 @@ export default function VMDetailPage() {
 
     useEffect(() => {
         fetchData()
+        // fetchSG()
     }, [])
 
 
     return <>
-        <Typography variant="h4">VM {vm.name} Detail Page</Typography>
+        <Typography variant="h4">VM {id} Detail Page</Typography>
         <Box>
             <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={fetchData}
+                    onClick={() => { fetchData(); fetchSG(); }}
                 >
                     refresh
                 </Button>

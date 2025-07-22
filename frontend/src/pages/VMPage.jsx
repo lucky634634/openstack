@@ -4,7 +4,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useState } from "react";
 import api from "../api";
 import CreateVMDialog from "../components/CreateVMDialog";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 export default function VMPage() {
     const columns = [
@@ -19,7 +19,7 @@ export default function VMPage() {
 
     const [open, setOpen] = useState(false);
 
-    const navigate = useNavigate()
+    // const navigate = useNavigate()
 
     async function fetchData() {
         await api.get('/instances')
@@ -127,7 +127,7 @@ export default function VMPage() {
             >
                 Get Console
             </Button>
-            <Button
+            {/* <Button
                 variant="contained"
                 sx={{ marginRight: "5px" }}
                 color="primary"
@@ -137,7 +137,7 @@ export default function VMPage() {
                 }}
             >
                 Add/Remove Security Group
-            </Button>
+            </Button> */}
         </Box >
         <Box sx={{ width: "100%", height: "600px" }}>
             <DataGrid rows={rows} columns={columns} checkboxSelection onRowSelectionModelChange={(ids) => setSelectedIds(Array.from(ids.ids))} />
