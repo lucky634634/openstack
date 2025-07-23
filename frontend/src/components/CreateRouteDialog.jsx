@@ -55,7 +55,7 @@ export default function CreateRouteDialog({ open, handleClose, router }) {
 
     return (
         <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-            <DialogTitle>Create Port</DialogTitle>
+            <DialogTitle>Create Route</DialogTitle>
             <DialogContent>
                 <TextField
                     autoFocus

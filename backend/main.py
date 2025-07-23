@@ -48,8 +48,8 @@ async def health(request: Request):
 async def test(request: Request):
     conn = get_openstack_connection()
     server = conn.list_servers()[0]
-    print(server)
-    return server
+    print(server.security_groups)
+    return None
 
 
 @app.get("/networks/")

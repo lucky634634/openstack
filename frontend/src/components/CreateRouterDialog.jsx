@@ -73,7 +73,7 @@ export default function CreateRouterDialog({ open, handleClose }) {
 
     return (
         <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-            <DialogTitle>Create VM</DialogTitle>
+            <DialogTitle>Create Router</DialogTitle>
             <DialogContent>
                 <TextField
                     autoFocus
