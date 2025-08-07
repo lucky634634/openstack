@@ -276,7 +276,7 @@ async def get_flavor(request: Request, flavor_id: str):
         return HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/create-flavors")
+@app.post("/create-flavor")
 @limiter.limit("100/minute")
 async def create_flavors(request: Request, payload: CreateFlavorRequest):
     try:
