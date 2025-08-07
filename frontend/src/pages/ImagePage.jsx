@@ -45,7 +45,7 @@ function ImagePage() {
     useState(() => { fetchData() }, [])
 
     return <>
-        <Typography variant="h4">Network Page</Typography>
+        <Typography variant="h4">Image Page</Typography>
         <Box sx={{ padding: "5px 0px", width: "100%" }}>
             <Button
                 variant="contained"
