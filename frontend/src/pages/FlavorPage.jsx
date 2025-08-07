@@ -37,7 +37,7 @@ export default function FlavorPage() {
 
     async function deleteData() {
         for (let id of selectedIds) {
-            await api.delete("/delete-flavor", { params: { flavor_id: id } })
+            await api.delete("/delete-flavor", { params: { flavor: id } })
                 .then(response => {
                     console.log(response);
                     alert("Instance deleted successfully");

@@ -44,7 +44,7 @@ export default function SecurityGroupDetailPage() {
 
     async function deleteRules() {
         for (let id of selectedIds) {
-            await api.delete(`/delete-security-rule`, { params: { rule: id } })
+            await api.delete(`/delete-security-rule`, { params: { security_rule_id : id } })
                 .then(response => {
                     console.log(response);
                     alert("Rule deleted successfully");
