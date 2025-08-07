@@ -40,7 +40,7 @@ export default function FlavorPage() {
             await api.delete("/delete-flavor", { params: { flavor: id } })
                 .then(response => {
                     console.log(response);
-                    alert("Instance deleted successfully");
+                    alert("Flavor deleted successfully");
                 })
                 .catch(error => {
                     console.error(error);

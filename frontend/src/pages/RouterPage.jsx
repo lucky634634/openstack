@@ -39,7 +39,7 @@ export default function RouterPage() {
             await api.delete("/delete-router", { params: { router_id: id } })
                 .then(response => {
                     console.log(response);
-                    alert("Instance deleted successfully");
+                    alert("Router deleted successfully");
                 })
                 .catch(error => {
                     console.error(error);

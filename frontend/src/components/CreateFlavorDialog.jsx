@@ -37,7 +37,7 @@ export default function CreateFlavorDialog({ open, handleClose }) {
         })
             .then(response => {
                 console.log(response);
-                alert("VM created successfully");
+                alert("Flavor created successfully");
             })
             .catch(error => {
                 console.error(error);

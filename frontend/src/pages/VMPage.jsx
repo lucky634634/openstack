@@ -41,7 +41,7 @@ export default function VMPage() {
             await api.delete("/delete-instance", { params: { instance: id } })
                 .then(response => {
                     console.log(response);
-                    alert("Instance deleted successfully");
+                    alert("VM deleted successfully");
                 })
                 .catch(error => {
                     console.error(error);

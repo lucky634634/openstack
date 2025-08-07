@@ -38,7 +38,7 @@ export default function SecurityGroupPage() {
             await api.delete("/delete-security-group", { params: { instance: id } })
                 .then(response => {
                     console.log(response);
-                    alert("Instance deleted successfully");
+                    alert("security group deleted successfully");
                 })
                 .catch(error => {
                     console.error(error);

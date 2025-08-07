@@ -55,7 +55,7 @@ export default function CreateSubnetDialog({ network, open, handleClose }) {
         )
             .then(response => {
                 console.log(response);
-                alert("Network created successfully");
+                alert("Subnet created successfully");
             })
             .catch(error => {
                 console.error(error);
