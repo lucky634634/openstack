@@ -28,7 +28,7 @@ export default function CreateFlavorDialog({ open, handleClose }) {
     const [vcpus, setVcpus] = useState(0)
 
     async function createFlavor() {
-        await api.post('/create-instance', {
+        await api.post('/create-flavor', {
             name: name,
             ram: ram,
             disk: disk,
