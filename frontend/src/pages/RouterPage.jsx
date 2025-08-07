@@ -36,7 +36,7 @@ export default function RouterPage() {
 
     async function deleteData() {
         for (let id of selectedIds) {
-            await api.delete("/delete-router", { params: { instance: id } })
+            await api.delete("/delete-router", { params: { router_id: id } })
                 .then(response => {
                     console.log(response);
                     alert("Instance deleted successfully");
