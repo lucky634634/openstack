@@ -589,16 +589,8 @@ async def delete_router(request: Request, router_id: str):
     try:
         conn = get_openstack_connection()
         router = conn.get_router(router_id)
-        if router.external_gateway_info:
-            conn.update_router(router.id, ext_gateway_net_id=None)
-        ports = conn.list_router_interfaces(router)
-        for port in ports:
-            if port.device_owner in [
-                "network:router_interface",
-                "network:router_gateway",
-            ]:
-                conn.remove_router_interface(router.id, port_id=port.id)
-            conn.delete_port(port.id)
+        if router is None:
+            raise HTTPException(status_code=404, detail="Router not found")
         result = conn.delete_router(router_id)
         if result:
             return {"message": "Router deleted successfully"}
